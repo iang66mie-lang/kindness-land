@@ -78,4 +78,245 @@
                 <div class="bg-white p-6 rounded-2xl shadow-md">
                     <h3 class="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">✍️ 每日行善紀錄回報</h3>
                     <div class="grid grid-cols-2 gap-3 mb-4">
-                        <label class="flex items-center gap-2 p
+                        <label class="flex items-center gap-2 p-3 border rounded-xl hover:bg-green-50 cursor-pointer transition">
+                            <input type="radio" name="kindnessType" value="daily" checked onclick="updateScoreHint(1)">
+                            <div class="text-left"><p class="font-medium text-sm">每日善行</p><p class="text-xs text-gray-400">+1 分</p></div>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 border rounded-xl hover:bg-green-50 cursor-pointer transition">
+                            <input type="radio" name="kindnessType" value="major" onclick="updateScoreHint(5)">
+                            <div class="text-left"><p class="font-medium text-sm">重大善舉</p><p class="text-xs text-gray-400">+5 分</p></div>
+                        </label>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-600 mb-1">善行具體描述</label>
+                        <textarea id="kindnessDesc" rows="3" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none placeholder-gray-300" placeholder="例如：今天幫忙擦了 25春001班 的黑板、主動倒垃圾..."></textarea>
+                    </div>
+                    <button onclick="submitKindness()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md transition transform active:scale-95">
+                        送出善行，灌溉大地 ✨ (<span id="btnScoreHint">+1</span>分)
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-md flex flex-col max-h-[600px]">
+                <h3 class="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">📜 善行歷史回顧日誌</h3>
+                <p class="text-xs text-gray-400 mb-4">這裡忠實記錄了您在幾月幾號幾點幾分累積的所有功德：</p>
+                <div id="logContainer" class="space-y-3 overflow-y-auto flex-1 pr-1 text-sm">
+                    <p class="text-gray-400 text-center py-8">目前尚無行善紀錄，快去做好事吧！</p>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        // ==========================================
+        // ⚠️ 關鍵設定：請把下方引號內，換成你最新部署的 Google GAS 網址！
+        // ==========================================
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzBeHqFPnUEiRbkIF2U8j4NVWQ96nUDGLDGyFNicaR3AC54DH_EBzI8sKPddz8vulgJyQ/exec";
+        
+        let allUsersData = {};
+        let currentUser = null;
+        const DEFAULT_IMG_URL = "https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_2_spreadsheet_x64.png";
+
+        // 頁面初始化
+        window.onload = function() {
+            fetchDatabase();
+        };
+
+        // 自後台 API 異步讀取資料庫，完全不卡網頁
+        function fetchDatabase() {
+            showGlobalStatus(true, "正在連線至善之大地資料庫...");
+            
+            // 使用 JSONP 或者是標準 fetch 進行跨網域呼叫
+            fetch(`${SCRIPT_URL}?action=getAllUsers`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.result === "success") {
+                    allUsersData = data.users || {};
+                    showGlobalStatus(false);
+                    
+                    // 檢查本機是否有登入紀錄
+                    const savedUser = localStorage.getItem("kindness_user");
+                    if(savedUser && allUsersData[savedUser]) {
+                        loginAs(savedUser);
+                    } else {
+                        document.getElementById("authSection").classList.remove("hidden");
+                    }
+                } else {
+                    showGlobalStatus(true, "⚠️ 載入資料庫失敗，請確認後台部署權限是否設為『任何人』！", "❌");
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showGlobalStatus(true, "⚠️ 網路連線異常或 GAS 網址填寫錯誤！", "❌");
+            });
+        }
+
+        // 處理登入與註冊
+        function handleAuth() {
+            const user = document.getElementById("username").value.trim().toLowerCase();
+            const pass = document.getElementById("password").value.trim();
+            const nick = document.getElementById("nickname").value.trim();
+            const gen = document.getElementById("gender").value;
+
+            if(!user || !pass) { alert("請填寫帳號與密碼！"); return; }
+
+            // 帳號存在 -> 登入驗證
+            if(allUsersData[user]) {
+                if(allUsersData[user].password === pass) {
+                    loginAs(user);
+                } else {
+                    alert("密碼錯誤，請重新輸入！");
+                }
+            } else {
+                // 帳號不存在 -> 發動創角註冊
+                if(!nick) { alert("此為新角色，請填寫『遊戲暱稱』！"); return; }
+                
+                showGlobalStatus(true, "正在為您在大地中開拓新靈魂...");
+                const newUserData = { username: user, password: pass, nickname: nick, gender: gen, className: "25春001班", email: "" };
+                
+                fetch(`${SCRIPT_URL}?action=register`, {
+                    method: "POST",
+                    mode: "no-cors", // 防止跨網域被攔截
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(newUserData)
+                }).then(() => {
+                    // 防呆：假定寫入成功，更新本機資料並重新整理
+                    alert("🎉 創角成功！歡迎來到善之大地！");
+                    localStorage.setItem("kindness_user", user);
+                    location.reload();
+                }).catch(e => {
+                    alert("註冊失敗，請檢查網路！");
+                    showGlobalStatus(false);
+                });
+            }
+        }
+
+        // 登入成功狀態切換
+        function loginAs(username) {
+            currentUser = allUsersData[username];
+            localStorage.setItem("kindness_user", username);
+
+            document.getElementById("authSection").classList.add("hidden");
+            document.getElementById("gameSection").classList.remove("hidden");
+            document.getElementById("userStatus").classList.remove("hidden");
+
+            renderUserUI();
+        }
+
+        // 渲染使用者遊戲數據與土地進化
+        function renderUserUI() {
+            document.getElementById("navNickname").innerText = `${currentUser.nickname} (${currentUser.gender})`;
+            document.getElementById("navScore").innerText = currentUser.score;
+
+            // 土地演化邏輯
+            let stage = "🌱";
+            let levelName = "功德幼苗 (0分+)";
+            const score = currentUser.score;
+
+            if(score >= 50) { stage = "🏛️"; levelName = "終極庇護所・兜率內院 (50分+)"; }
+            else if(score >= 30) { stage = "🕌"; levelName = "天空大梵寺 (30分+)"; }
+            else if(score >= 20) { stage = "🏰"; levelName = "行善黃金古堡 (20分+)"; }
+            else if(score >= 10) { stage = "🏡"; levelName = "福報溫馨別墅 (10分+)"; }
+            else if(score >= 5)  { stage = "🌿"; levelName = "善意茂盛灌木 (5分+)"; }
+
+            document.getElementById("landStageVisual").innerText = stage;
+            document.getElementById("landLevelName").innerText = levelName;
+
+            // 渲染帶有精準時間戳記的歷史回顧日誌
+            const logContainer = document.getElementById("logContainer");
+            if(!currentUser.logs || currentUser.logs.length === 0) {
+                logContainer.innerHTML = `<p class="text-gray-400 text-center py-8">目前尚無行善紀錄，快去做好事吧！</p>`;
+            } else {
+                let html = "";
+                // 讓最新的善行排在最上面
+                for(let i = currentUser.logs.length - 1; i >= 0; i--) {
+                    const item = currentUser.logs[i];
+                    html += `
+                        <div class="bg-slate-50 p-3 rounded-xl border-l-4 border-green-500 shadow-sm">
+                            <p class="text-xs text-gray-400 font-semibold mb-1">📅 紀錄時間：${item.time}</p>
+                            <p class="text-gray-700 font-medium"><span class="text-green-600 font-bold">[${item.type}]</span> ${item.desc}</p>
+                        </div>
+                    `;
+                }
+                logContainer.innerHTML = html;
+            }
+        }
+
+        // 提交善行單 (自動捕捉當下時間戳記)
+        function submitKindness() {
+            const desc = document.getElementById("kindnessDesc").value.trim();
+            if(!desc) { alert("請寫下您的具體善行描述！隨喜讚歎！"); return; }
+
+            const typeVal = document.querySelector('input[name="kindnessType"]:checked').value;
+            const scoreVal = typeVal === "daily" ? 1 : 5;
+            const typeText = typeVal === "daily" ? "每日善行 +1分" : "重大善舉 +5分";
+
+            // 🌟 核心：捕捉當下真實世界的精準時間
+            const now = new Date();
+            const timeString = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+            const logItem = {
+                time: timeString,
+                type: typeText,
+                desc: desc
+            };
+
+            showGlobalStatus(true, "正在將功德打包上傳至雲端試算表...");
+
+            const payload = {
+                username: currentUser.username,
+                scoreVal: scoreVal,
+                logItem: logItem
+            };
+
+            fetch(`${SCRIPT_URL}?action=addKindness`, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                alert("✨ 善行已成功記錄！功德無量！");
+                // 本地預先更新進度，讓玩家不用等待重整
+                currentUser.score += scoreVal;
+                if(!currentUser.logs) currentUser.logs = [];
+                currentUser.logs.push(logItem);
+                
+                document.getElementById("kindnessDesc").value = "";
+                showGlobalStatus(false);
+                renderUserUI();
+            }).catch(e => {
+                alert("上傳失敗，請稍後再試！");
+                showGlobalStatus(false);
+            });
+        }
+
+        // 切換按鈕分數提示
+        function updateScoreHint(val) {
+            document.getElementById("btnScoreHint").innerText = `+${val}`;
+        }
+
+        // 狀態列顯示控制
+        function showGlobalStatus(show, msg = "", iconHtml = null) {
+            const statusBox = document.getElementById("globalStatus");
+            const statusMsg = document.getElementById("statusMessage");
+            const statusIcon = document.getElementById("statusIcon");
+
+            if(show) {
+                statusBox.classList.remove("hidden");
+                statusMsg.innerText = msg;
+                if(iconHtml) statusIcon.innerHTML = `<span class="text-3xl">${iconHtml}</span>`;
+                else statusIcon.innerHTML = `<div class="loading-spinner"></div>`;
+            } else {
+                statusBox.classList.add("hidden");
+            }
+        }
+
+        // 登出
+        function logout() {
+            localStorage.removeItem("kindness_user");
+            location.reload();
+        }
+    </script>
+</body>
+</html>
