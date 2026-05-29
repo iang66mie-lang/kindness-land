@@ -302,19 +302,58 @@
 
         window.onload = function() {
             initDateDisplay();
-            fetchDatabase();
-        };
-
-        function toggleMobileMenu(open) {
-            const menu = document.getElementById("sidebarMenu");
-            const overlay = document.getElementById("sidebarOverlay");
-            if (open) {
-                menu.classList.remove("-translate-x-full");
-                overlay.classList.remove("hidden");
-            } else {
-                menu.classList.add("-translate-x-full");
-                overlay.classList.add("hidden");
-            }
+           function fetchDatabase() {
+            showGlobalStatus(true, "正在連線至善之大地資料庫...");
+            
+            fetch(`${SCRIPT_URL}?action=getAllUsers`)
+            .then(res => res.json())
+            .then(data => {
+                let cleanData = data;
+                if (typeof data === "string") {
+                    try {
+                        const jsonStr = data.substring(data.indexOf("(") + 1, data.lastIndexOf(")"));
+                        cleanData = JSON.parse(jsonStr);
+                    } catch(e) {}
+                }
+                allUsersData = cleanData.users || cleanData || {};
+                showGlobalStatus(false);
+                
+                // 🌟 加強防呆：取出儲存的帳號並強制轉小寫、去空格
+                let savedUser = localStorage.getItem("kindness_user");
+                if (savedUser) {
+                    savedUser = savedUser.trim().toLowerCase();
+                }
+                
+                if(savedUser && allUsersData[savedUser]) { 
+                    loginAs(savedUser); 
+                } else { 
+                    document.getElementById("authSection").classList.remove("hidden"); 
+                }
+            })
+            .catch(err => {
+                const callbackName = "jsonpCallback_" + Date.now();
+                window[callbackName] = function(data) {
+                    allUsersData = data.users || data || {};
+                    showGlobalStatus(false);
+                    
+                    let savedUser = localStorage.getItem("kindness_user");
+                    if (savedUser) {
+                        savedUser = savedUser.trim().toLowerCase();
+                    }
+                    
+                    if(savedUser && allUsersData[savedUser]) { 
+                        loginAs(savedUser); 
+                    } else { 
+                        document.getElementById("authSection").classList.remove("hidden"); 
+                    }
+                    document.getElementById(callbackName).remove();
+                    delete window[callbackName];
+                };
+                const script = document.createElement("script");
+                script.id = callbackName;
+                script.src = `${SCRIPT_URL}?action=getAllUsers&callback=${callbackName}`;
+                document.body.appendChild(script);
+            });
         }
 
         function initDateDisplay() {
@@ -396,9 +435,13 @@
             }
         }
 
-        function loginAs(username) {
-            currentUser = allUsersData[username];
-            localStorage.setItem("kindness_user", username);
+       function loginAs(username) {
+            const cleanUsername = username.trim().toLowerCase();
+            currentUser = allUsersData[cleanUsername];
+            
+            // 🌟 核心修正：將帳號名稱安全地鎖進本地記憶
+            localStorage.setItem("kindness_user", cleanUsername);
+            
             document.getElementById("authSection").classList.add("hidden");
             document.getElementById("gameSection").classList.remove("hidden");
             renderUserUI();
