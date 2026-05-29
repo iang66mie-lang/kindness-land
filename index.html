@@ -5,107 +5,306 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>善之大地 Land of Kindness</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* 隱藏捲軸但保持滾動功能 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* 載入動畫 */
         .loading-spinner {
             border: 4px solid rgba(0, 0, 0, 0.1);
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            border-left-color: #3498db;
+            border-left-color: #16a34a;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen font-sans">
+<body class="bg-[#edf3f6] min-h-screen text-slate-700 font-sans antialiased">
 
-    <header class="bg-green-600 text-white p-4 shadow-md flex justify-between items-center">
-        <h1 class="text-xl font-bold flex items-center gap-2">🌱 善之大地 <span class="text-xs bg-green-700 px-2 py-1 rounded">25春001班</span></h1>
-        <div id="userStatus" class="hidden text-sm flex items-center gap-2">
-            <span id="navNickname" class="font-semibold"></span> (得分: <span id="navScore" class="text-yellow-300 font-bold">0</span>)
-            <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-xs px-2 py-1 rounded transition">登出</button>
+    <div id="globalStatus" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-xs mx-auto">
+            <div id="statusIcon" class="flex justify-center mb-4"><div class="loading-spinner"></div></div>
+            <p id="statusMessage" class="text-slate-600 font-semibold text-sm">正在連線至善之大地資料庫...</p>
         </div>
-    </header>
+    </div>
 
-    <main class="max-w-6xl mx-auto p-4">
-        <div id="globalStatus" class="bg-white p-6 rounded-xl shadow-md text-center my-8 max-w-md mx-auto">
-            <div id="statusIcon" class="flex justify-center mb-3"><div class="loading-spinner"></div></div>
-            <p id="statusMessage" class="text-gray-600 font-medium">正在連線至善之大地資料庫...</p>
-        </div>
-
-        <section id="authSection" class="hidden max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl my-8">
-            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">建立角色 / 登入</h2>
+    <section id="authSection" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+            <div class="text-center mb-6">
+                <span class="text-4xl">🌱</span>
+                <h2 class="text-2xl font-bold text-slate-800 mt-2">進入善之大地</h2>
+                <p class="text-xs text-gray-400 mt-1">25春001班 善行累積系統</p>
+            </div>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">使用者帳號</label>
-                    <input type="text" id="username" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="請輸入英文或數字">
+                    <label class="block text-xs font-bold text-slate-500 mb-1">使用者帳號</label>
+                    <input type="text" id="username" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-green-500 transition" placeholder="請輸入帳號">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">密碼</label>
-                    <input type="password" id="password" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="請輸入密碼">
+                    <label class="block text-xs font-bold text-slate-500 mb-1">密碼</label>
+                    <input type="password" id="password" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-green-500 transition" placeholder="請輸入密碼">
                 </div>
-                <hr class="border-gray-200 my-4">
-                <p class="text-xs text-gray-400 text-center">💡 初次登入將自動以此資料創立新角色</p>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">遊戲暱稱 (新創角必填)</label>
-                    <input type="text" id="nickname" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="例如：隨喜功德小行者">
+                <div class="border-t border-dashed border-slate-100 my-4 pt-4">
+                    <p class="text-center text-xs text-amber-500 mb-2">💡 新玩家首次登入會以此資料直接創角</p>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">遊戲暱稱 (新創角必填)</label>
+                    <input type="text" id="nickname" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-green-500 transition" placeholder="例如：小善同學">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">性別</label>
-                    <select id="gender" class="w-full px-3 py-2 border rounded-lg outline-none">
+                    <label class="block text-xs font-bold text-slate-500 mb-1">性別</label>
+                    <select id="gender" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-green-500 transition">
                         <option value="師兄">師兄</option>
                         <option value="師姐">師姐</option>
-                        <option value="其他">其他</option>
                     </select>
                 </div>
-                <button onclick="handleAuth()" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg shadow-md mt-2">
-                    進入善之大地 🚀
+                <button onclick="handleAuth()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95 mt-2">
+                    登入 / 創角 🚀
                 </button>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section id="gameSection" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 my-4">
-            <div class="lg:col-span-2 space-y-6">
-                <div class="bg-white p-6 rounded-2xl shadow-md text-center">
-                    <h3 class="text-lg font-bold text-gray-700 mb-2">我的善意家園</h3>
-                    <div id="landStageVisual" class="text-6xl my-4">🌱</div>
-                    <p class="text-sm text-gray-500">目前等級：<span id="landLevelName" class="font-bold text-green-600">功功德幼苗</span></p>
+    <div id="gameSection" class="hidden min-h-screen flex">
+        
+        <aside class="w-64 bg-white border-r border-slate-100 flex flex-col justify-between p-4 shrink-0">
+            <div>
+                <div class="flex items-center gap-3 px-2 py-4 border-b border-slate-100 mb-6">
+                    <span class="text-3xl text-green-600">🌱</span>
+                    <div>
+                        <h1 class="text-xl font-black text-[#5c4a3c] tracking-wider">善之大地</h1>
+                        <p class="text-[10px] text-gray-400 font-bold tracking-tight">Land of Kindness</p>
+                    </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-md">
-                    <h3 class="text-lg font-bold text-gray-700 mb-4">✍️ 每日行善紀錄回報</h3>
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <label class="flex items-center gap-2 p-3 border rounded-xl hover:bg-green-50 cursor-pointer">
-                            <input type="radio" name="kindnessType" value="daily" checked onclick="updateScoreHint(1)">
-                            <div><p class="font-medium text-sm">每日善行</p><p class="text-xs text-gray-400">+1 分</p></div>
-                        </label>
-                        <label class="flex items-center gap-2 p-3 border rounded-xl hover:bg-green-50 cursor-pointer">
-                            <input type="radio" name="kindnessType" value="major" onclick="updateScoreHint(5)">
-                            <div><p class="font-medium text-sm">重大善舉</p><p class="text-xs text-gray-400">+5 分</p></div>
-                        </label>
+                <div class="bg-slate-50 rounded-2xl p-4 mb-4 relative">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 bg-sky-200 rounded-full overflow-hidden border border-slate-200 flex items-center justify-center text-2xl">👦</div>
+                        <div>
+                            <div class="flex items-center gap-1">
+                                <span id="navNickname" class="font-bold text-slate-800 text-sm">小善同學</span>
+                                <i class="fa-solid fa-pen text-slate-300 text-xs cursor-pointer hover:text-slate-500"></i>
+                            </div>
+                            <span class="bg-white border border-slate-200 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded-full">25春001班</span>
+                        </div>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-600 mb-1">善行具體描述</label>
-                        <textarea id="kindnessDesc" rows="3" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="填寫做了什麼好事..."></textarea>
+                    <div class="bg-[#5c4a3c] text-white rounded-xl px-3 py-1.5 text-xs font-bold mb-2 flex justify-between items-center">
+                        <span>等級 <span id="lblLevel">6</span> <span id="lblLevelName">社區大樓</span></span>
                     </div>
-                    <button onclick="submitKindness()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md">
-                        送出善行，灌溉大地 ✨ (<span id="btnScoreHint">+1</span>分)
-                    </button>
+                    <div class="flex items-center gap-2 text-xs font-bold text-slate-600 mb-1">
+                        <span>🍃 <span id="lblScore">630</span> 分</span>
+                    </div>
+                    <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                        <div id="scoreBar" class="bg-green-500 h-full transition-all duration-500" style="width: 70%"></div>
+                    </div>
+                    <p class="text-[10px] text-slate-400 font-semibold mt-1">距離下次升級：還需要 <span id="lblNextLevelScore">70</span> 分</p>
                 </div>
+
+                <nav class="space-y-1">
+                    <button class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold bg-green-50 text-green-700 transition"><i class="fa-solid fa-house"></i> 我的首頁</button>
+                    <button onclick="openKindnessModal()" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i class="fa-solid fa-pen-to-square"></i> 輸入善行</button>
+                    <button class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i class="fa-solid fa-list-check"></i> 善行紀錄</button>
+                    <button class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i class="fa-solid fa-calendar-days"></i> 回顧日誌</button>
+                    <button class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i class="fa-solid fa-chart-line"></i> 排行榜</button>
+                    <button class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i class="fa-solid fa-users"></i> 班級競賽</button>
+                    <button class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i class="fa-solid fa-award"></i> 成就徽章</button>
+                    <button class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i class="fa-solid fa-gear"></i> 設定</button>
+                </nav>
+            </div>
+            
+            <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition mb-2">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> 登出
+            </button>
+        </aside>
+
+        <div class="flex-1 p-4 flex gap-4 overflow-y-auto max-h-screen">
+            
+            <div class="flex-1 space-y-4">
+                
+                <div class="bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center">
+                    <div class="flex items-center gap-2 text-sm font-bold text-slate-700">
+                        <i class="fa-regular fa-calendar text-green-600"></i>
+                        <span id="topDateStr">2026年5月29日 星期五</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-xs font-semibold text-slate-400">
+                        <span>上次登入：<span id="lblLastLogin">2026/05/29 11:35</span></span>
+                        <div class="relative cursor-pointer"><i class="fa-regular fa-bell text-lg text-slate-600"></i><span class="absolute -top-1 -right-1 bg-red-500 text-white w-3.5 h-3.5 text-[9px] rounded-full flex items-center justify-center">3</span></div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 shadow-sm">
+                    <h3 class="text-center text-xs font-bold text-green-700 tracking-wider mb-3 flex items-center justify-center gap-1">🍃 我的土地進化歷程 🍃</h3>
+                    <div class="grid grid-cols-10 gap-2">
+                        <div id="stageCard_1" class="bg-slate-50 p-1.5 rounded-xl border border-slate-100 text-center text-[10px] font-bold opacity-40">
+                            <span class="bg-amber-600 text-white w-3.5 h-3.5 rounded-full inline-flex items-center justify-center mb-1">1</span>
+                            <div class="text-sm">⏳</div><div class="text-slate-600 scale-90 mt-0.5 whitespace-nowrap">乾枯土地</div><div class="text-gray-400 text-[8px] scale-90">0分</div>
+                        </div>
+                        <div id="stageCard_2" class="bg-slate-50 p-1.5 rounded-xl border border-slate-100 text-center text-[10px] font-bold opacity-40">
+                            <span class="bg-amber-600 text-white w-3.5 h-3.5 rounded-full inline-flex items-center justify-center mb-1">2</span>
+                            <div class="text-sm">🌾</div><div class="text-slate-600 scale-90 mt-0.5 whitespace-nowrap">肥沃土地</div><div class="text-gray-400 text-[8px] scale-90">100分</div>
+                        </div>
+                        <div id="stageCard_3" class="bg-slate-50 p-1.5 rounded-xl border border-slate-100 text-center text-[10px] font-bold opacity-40">
+                            <span class="bg-amber-600 text-white w-3.5 h-3.5 rounded-full inline-flex items-center justify-center mb-1">3</span>
+                            <div class="text-sm">🏡</div><div class="text-slate-600 scale-90 mt-0.5 whitespace-nowrap">小房子</div><div class="text-gray-400 text-[8px] scale-90">200分</div>
+                        </div>
+                        <div id="stageCard_4" class="bg-slate-50 p-1.5 rounded-xl border border-slate-100 text-center text-[10px] font-bold opacity-40">
+                            <span class="bg-amber-600 text-white w-3.5 h-3.5 rounded-full inline-flex items-center justify-center mb-1">4</span>
+                            <div class="text-sm">🏮</div><div class="text-slate-600 scale-90 mt-0.5 whitespace-nowrap">三合院</div><div class="text-gray-400 text-[8px] scale-90">300分</div>
+                        </div>
+                        <div id="stageCard_5" class="bg-slate-50 p-1.5 rounded-xl border border-slate-100 text-center text-[10px] font-bold opacity-40">
+                            <span class="bg-amber-600 text-white w-3.5 h-3.5 rounded-full inline-flex items-center justify-center mb-1">5</span>
+                            <div class="text-sm">🏢</div><div class="text-slate-600 scale-90 mt-0.5 whitespace-nowrap">庭園洋房</div><div class="text-gray-400 text-[8px] scale-90">400分</div>
+                        </div>
+                        <div id="stageCard_6" class="bg-slate-50 p-1.5 rounded-xl border border-slate-100 text-center text-[10px] font-bold opacity-40">
+                            <span class="bg-amber-600 text-white w-3.5 h-3.5 rounded-full inline-flex items-center justify-center mb-1">6</span>
+                            <div class="text-sm">🏰</div><div class="text-slate-600 scale-90 mt-0.5 whitespace-nowrap">高級別墅</div><div class="text-gray-400 text-[8px] scale-90">500分</div>
+                        </div>
+                        <div id="stageCard_7" class="bg-slate-50 p-1.5 rounded-xl border border-slate-100 text-center text-[10px] font-bold opacity-40">
+                            <span class="bg-amber-600 text-white w-3.5 h-3.5 rounded-full inline-flex items-center justify-center mb-1">7</span>
+                            <div class="text-sm">🏙️</div><div class="text-slate-600 scale-90 mt-0.5 whitespace-nowrap">社區大樓</div><div class="text-gray-400 text-[8px] scale-90">600分</div>
+                        </div>
+                        <div id="stageCard_8" class="bg-slate-50 p-1.5 rounded-xl border border-slate-100 text-center text-[10px] font-bold opacity-40">
+                            <span class="bg-amber-600 text-white w-3.5 h-3.5 rounded-full inline-flex items-center justify-center mb-1">8</span>
+                            <div class="text-sm">🏙️</div><div class="text-slate-600 scale-90 mt-0.5 whitespace-nowrap">高樓大廈</div><div class="text-gray-400 text-[8px] scale-90">700分</div>
+                        </div>
+                        <div id="stageCard_9" class="bg-slate-50 p-1.5 rounded-xl border border-slate-100 text-center text-[10px] font-bold opacity-40">
+                            <span class="bg-amber-600 text-white w-3.5 h-3.5 rounded-full inline-flex items-center justify-center mb-1">9</span>
+                            <div class="text-sm">🚀</div><div class="text-slate-600 scale-90 mt-0.5 whitespace-nowrap">摩天大樓</div><div class="text-gray-400 text-[8px] scale-90">800分</div>
+                        </div>
+                        <div id="stageCard_10" class="bg-slate-50 p-1.5 rounded-xl border border-slate-100 text-center text-[10px] font-bold opacity-40">
+                            <span class="bg-amber-600 text-white w-3.5 h-3.5 rounded-full inline-flex items-center justify-center mb-1">10</span>
+                            <div class="text-sm">🕌</div><div class="text-slate-600 scale-90 mt-0.5 whitespace-nowrap">兜率內院</div><div class="text-gray-400 text-[8px] scale-90">1000分</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm relative h-80 flex items-center justify-between overflow-hidden bg-gradient-to-b from-sky-100 via-white to-slate-50">
+                    <button class="bg-white/80 hover:bg-white text-slate-600 w-8 h-8 rounded-full shadow flex items-center justify-center z-10"><i class="fa-solid fa-chevron-left"></i></button>
+                    
+                    <div class="text-center z-10 flex-1">
+                        <div id="bigLandStageVisual" class="text-[90px] drop-shadow-xl animate-bounce duration-1000">🏙️</div>
+                        <div class="bg-white/90 backdrop-blur px-6 py-3 rounded-2xl shadow-md inline-block max-w-xs mt-2">
+                            <p class="text-xs text-gray-400 font-bold">目前等級：<span id="bigLblLevel">6</span></p>
+                            <h4 id="bigLblLevelName" class="text-xl font-black text-[#5c4a3c] my-0.5">社區大樓</h4>
+                            <p class="text-xs text-gray-500 font-medium">目前總分：<span id="bigLblScore" class="font-bold text-green-600">630</span> 分</p>
+                            <div class="w-32 bg-slate-200 h-2 rounded-full mx-auto mt-2 overflow-hidden"><div id="bigScoreBar" class="bg-green-500 h-full" style="width:70%"></div></div>
+                            <button class="mt-3 bg-green-700 hover:bg-green-800 text-white text-[10px] font-bold px-4 py-1.5 rounded-lg shadow-sm transition">查看升級獎勵</button>
+                        </div>
+                    </div>
+
+                    <button class="bg-white/80 hover:bg-white text-slate-600 w-8 h-8 rounded-full shadow flex items-center justify-center z-10"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white rounded-2xl p-4 shadow-sm flex flex-col h-[320px]">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="text-sm font-black text-slate-800 flex items-center gap-1.5">🌳 我的善行紀錄 (最近)</h4>
+                            <button class="text-xs font-bold text-slate-400 hover:text-slate-600">查看全部</button>
+                        </div>
+                        <div class="overflow-y-auto flex-1 no-scrollbar text-xs space-y-2" id="gridLogContainer">
+                            </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-4 shadow-sm flex flex-col h-[320px]">
+                        <h4 class="text-sm font-black text-slate-800 mb-3 flex items-center gap-1.5">🏆 班級排行榜 <span class="text-xs text-slate-400 font-normal">(25春001班)</span></h4>
+                        <div class="overflow-y-auto flex-1 no-scrollbar space-y-2" id="leaderboardContainer">
+                            </div>
+                        <button class="w-full mt-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold py-2 rounded-xl transition">查看完整排行榜</button>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="bg-white p-6 rounded-2xl shadow-md flex flex-col max-h-[600px]">
-                <h3 class="text-lg font-bold text-gray-700 mb-3">📜 善行歷史回顧日誌</h3>
-                <div id="logContainer" class="space-y-3 overflow-y-auto flex-1 pr-1 text-sm">
-                    <p class="text-gray-400 text-center py-8">目前尚無行善紀錄。</p>
+            <div class="w-72 space-y-4 shrink-0">
+                
+                <div class="bg-white rounded-2xl p-4 shadow-sm text-center">
+                    <p class="text-xs text-slate-400 font-bold flex items-center justify-center gap-1"><i class="fa-regular fa-calendar-check text-green-600"></i> 今日日期</p>
+                    <h2 id="rightBigDate" class="text-xl font-black text-slate-800 mt-1">2026/5/29</h2>
+                    <p id="rightBigWeek" class="text-xs font-bold text-slate-500 bg-slate-50 rounded-lg py-1 mt-1">星期五</p>
                 </div>
+
+                <div class="bg-white rounded-2xl p-4 shadow-sm text-xs">
+                    <div class="flex justify-between items-center mb-2 font-bold text-slate-700">
+                        <span>📅 善行日曆</span>
+                        <div class="flex gap-2 text-slate-400"><i class="fa-solid fa-chevron-left cursor-pointer hover:text-slate-600"></i><span id="calMonthStr">2026年5月</span><i class="fa-solid fa-chevron-right cursor-pointer hover:text-slate-600"></i></div>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 text-center font-bold text-slate-400 text-[10px] mb-1">
+                        <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 text-center font-semibold text-slate-600">
+                        <div class="py-1 text-slate-300">26</div><div class="py-1 text-slate-300">27</div><div class="py-1 text-slate-300">28</div><div class="py-1 text-slate-300">29</div><div class="py-1 text-slate-300">30</div><div class="py-1">1</div><div class="py-1">2</div>
+                        <div class="py-1">3</div><div class="py-1">4</div><div class="py-1">5</div><div class="py-1">6</div><div class="py-1">7</div><div class="py-1">8</div><div class="py-1">9</div>
+                        <div class="py-1">10</div><div class="py-1">11</div><div class="py-1">12</div><div class="py-1">13</div><div class="py-1">14</div><div class="py-1">15</div><div class="py-1">16</div>
+                        <div class="py-1">17</div><div class="py-1">18</div><div class="py-1">19</div><div class="py-1 bg-green-500 text-white rounded-full font-bold relative">20<span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-yellow-300 rounded-full"></span></div><div class="py-1">21</div><div class="py-1">22</div><div class="py-1">23</div>
+                        <div class="py-1">24</div><div class="py-1">25</div><div class="py-1">26</div><div class="py-1">27</div><div class="py-1">28</div><div class="py-1 bg-green-100 border border-green-500 rounded-full font-black">29</div><div class="py-1">30</div>
+                    </div>
+                    <div class="flex justify-center gap-4 text-[10px] font-bold text-slate-400 mt-3 border-t border-slate-50 pt-2">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 bg-green-500 rounded-full"></span> 有善行</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 bg-yellow-400 rounded-full"></span> 特殊善行</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 shadow-sm flex flex-col h-40">
+                    <h4 class="text-xs font-black text-slate-800 mb-2 flex items-center gap-1"><i class="fa-solid fa-list-ol text-green-600"></i> 今日善行記錄</h4>
+                    <div class="flex-1 overflow-y-auto no-scrollbar text-[11px] font-medium space-y-1.5 text-slate-600" id="todaySummaryContainer">
+                        </div>
+                    <div class="border-t border-slate-50 pt-2 flex justify-between items-center text-xs font-bold mt-2">
+                        <span class="text-slate-500">今日獲得：</span>
+                        <span class="text-green-600"><span id="lblTodayScore" class="text-base font-black">0</span> 分 🍃</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 shadow-sm">
+                    <h4 class="text-xs font-black text-slate-800 mb-3 flex items-center gap-1"><i class="fa-solid fa-medal text-green-600"></i> 成就徽章</h4>
+                    <div class="grid grid-cols-3 gap-3 text-center text-[10px] font-bold text-slate-500">
+                        <div class="flex flex-col items-center"><span class="text-2xl bg-amber-50 border border-amber-200 w-10 h-10 rounded-full flex items-center justify-center shadow-sm">⭐</span><span class="scale-90 mt-1">善行新星</span></div>
+                        <div class="flex flex-col items-center"><span class="text-2xl bg-amber-50 border border-amber-200 w-10 h-10 rounded-full flex items-center justify-center shadow-sm">✨</span><span class="scale-90 mt-1">持續向善</span></div>
+                        <div class="flex flex-col items-center"><span class="text-2xl bg-amber-50 border border-amber-200 w-10 h-10 rounded-full flex items-center justify-center shadow-sm">🌸</span><span class="scale-90 mt-1">樂於助人</span></div>
+                        <div class="flex flex-col items-center"><span class="text-2xl bg-purple-50 border border-purple-200 w-10 h-10 rounded-full flex items-center justify-center shadow-sm">🔮</span><span class="scale-90 mt-1">法喜充滿</span></div>
+                        <div class="flex flex-col items-center"><span class="text-2xl bg-orange-50 border border-orange-200 w-10 h-10 rounded-full flex items-center justify-center shadow-sm">🍊</span><span class="scale-90 mt-1">孝親楷模</span></div>
+                        <div class="flex flex-col items-center opacity-30"><span class="text-2xl bg-slate-100 border border-slate-300 w-10 h-10 rounded-full flex items-center justify-center">🔒</span><span class="scale-90 mt-1">???</span></div>
+                    </div>
+                </div>
+
             </div>
-        </section>
-    </main>
+        </div>
+    </div>
+
+    <div id="kindnessModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 relative">
+            <button onclick="closeKindnessModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">✍️ 填寫每日善行紀錄回報</h3>
+            
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl hover:bg-green-50 cursor-pointer transition">
+                        <input type="radio" name="kindnessType" value="daily" checked onclick="updateBtnScore(1)">
+                        <div class="text-xs font-bold"><p class="text-slate-800">每日善行</p><p class="text-green-600">+1 分</p></div>
+                    </label>
+                    <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl hover:bg-green-50 cursor-pointer transition">
+                        <input type="radio" name="kindnessType" value="major" onclick="updateBtnScore(10)">
+                        <div class="text-xs font-bold"><p class="text-slate-800">參加法會/重大善舉</p><p class="text-purple-600">+10 分</p></div>
+                    </label>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">善行具體描述</label>
+                    <textarea id="kindnessDesc" rows="4" class="w-full text-sm p-3 border border-slate-200 rounded-xl outline-none focus:border-green-500 transition placeholder-slate-300" placeholder="例如：幫忙媽媽洗碗、主動撿起地上的垃圾..."></textarea>
+                </div>
+                <button onclick="submitKindness()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95">
+                    送出善行，灌溉大地 ✨ (<span id="modalBtnScore">1</span>分)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="fixed bottom-2 left-64 right-0 text-center text-[10px] text-slate-400 font-bold z-0 pointer-events-none">
+        善念種下 · 福田成長 · 世界更美好 🙏
+    </footer>
 
     <script>
         // ==========================================
-        // ⚠️ 關鍵設定：請把這裡換成你最新的 Google GAS 網址！
+        // ⚠️ 關鍵對接：請務必把下方引號內換成你最新的 Google GAS 網址！
         // ==========================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzBeHqFPnUEiRbkIF2U8j4NVWQ96nUDGLDGyFNicaR3AC54DH_EBzI8sKPddz8vulgJyQ/exec";
         
@@ -113,14 +312,22 @@
         let currentUser = null;
 
         window.onload = function() {
+            initDateDisplay();
             fetchDatabase();
         };
 
-        // 🌟 核心修改：改用 JSONP 方式讀取資料，完美繞過所有 CORS 阻擋政策！
+        function initDateDisplay() {
+            const now = new Date();
+            const weeks = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+            const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${weeks[now.getDay()]}`;
+            document.getElementById("topDateStr").innerText = dateStr;
+            document.getElementById("rightBigDate").innerText = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
+            document.getElementById("rightBigWeek").innerText = weeks[now.getDay()];
+            document.getElementById("calMonthStr").innerText = `${now.getFullYear()}年${now.getMonth()+1}月`;
+        }
+
         function fetchDatabase() {
             showGlobalStatus(true, "正在連線至善之大地資料庫...");
-            
-            // 建立一個動態的 script 標籤向 Google 要資料
             const callbackName = "jsonpCallback_" + Date.now();
             window[callbackName] = function(data) {
                 if(data.result === "success") {
@@ -133,12 +340,11 @@
                         document.getElementById("authSection").classList.remove("hidden");
                     }
                 } else {
-                    showGlobalStatus(true, "⚠️ 載入資料庫失敗！", "❌");
+                    showGlobalStatus(true, "⚠️ 資料庫回傳失敗，請確認後台部署！", "❌");
                 }
                 document.getElementById(callbackName).remove();
                 delete window[callbackName];
             };
-
             const script = document.createElement("script");
             script.id = callbackName;
             script.src = `${SCRIPT_URL}?action=getAllUsers&callback=${callbackName}`;
@@ -156,14 +362,10 @@
             if(allUsersData[user]) {
                 if(allUsersData[user].password === pass) {
                     loginAs(user);
-                } else {
-                    alert("密碼錯誤！");
-                }
+                } else { alert("密碼錯誤！"); }
             } else {
                 if(!nick) { alert("新角色請填寫遊戲暱稱！"); return; }
-                showGlobalStatus(true, "正在建立角色...");
-                
-                // 註冊同樣改用強效 JSONP 穿透法
+                showGlobalStatus(true, "正在為您建立新靈魂...");
                 const callbackName = "jsonpRegister_" + Date.now();
                 window[callbackName] = function(data) {
                     if(data.result === "success") {
@@ -177,7 +379,6 @@
                     document.getElementById(callbackName).remove();
                     delete window[callbackName];
                 };
-
                 const newUserData = { username: user, password: pass, nickname: nick, gender: gen, className: "25春001班", email: "" };
                 const script = document.createElement("script");
                 script.id = callbackName;
@@ -191,57 +392,144 @@
             localStorage.setItem("kindness_user", username);
             document.getElementById("authSection").classList.add("hidden");
             document.getElementById("gameSection").classList.remove("hidden");
-            document.getElementById("userStatus").classList.remove("hidden");
             renderUserUI();
         }
 
         function renderUserUI() {
-            document.getElementById("navNickname").innerText = `${currentUser.nickname} (${currentUser.gender})`;
-            document.getElementById("navScore").innerText = currentUser.score;
+            // 姓名與分數渲染
+            document.getElementById("navNickname").innerText = currentUser.nickname;
+            document.getElementById("lblScore").innerText = currentUser.score;
+            document.getElementById("bigLblScore").innerText = currentUser.score;
 
-            let stage = "🌱"; let levelName = "功德幼苗 (0分+)"; const score = currentUser.score;
-            if(score >= 50) { stage = "🏛️"; levelName = "終極庇護所・兜率內院 (50分+)"; }
-            else if(score >= 30) { stage = "🕌"; levelName = "天空大梵寺 (30分+)"; }
-            else if(score >= 20) { stage = "🏰"; levelName = "行善黃金古堡 (20分+)"; }
-            else if(score >= 10) { stage = "🏡"; levelName = "福報溫馨別墅 (10分+)"; }
-            else if(score >= 5)  { stage = "🌿"; levelName = "善意茂盛灌木 (5分+)"; }
+            // 計算等級與進化歷程
+            const score = currentUser.score;
+            let lv = 1; let lvName = "乾枯土地"; let emoji = "⏳"; let nextScore = 100; let prevTarget = 0;
 
-            document.getElementById("landStageVisual").innerText = stage;
-            document.getElementById("landLevelName").innerText = levelName;
+            if(score >= 1000){ lv=10; lvName="兜率內院"; emoji="🕌"; nextScore=0; prevTarget=1000; }
+            else if(score >= 800){ lv=9; lvName="摩天大樓"; emoji="🚀"; nextScore=1000; prevTarget=800; }
+            else if(score >= 700){ lv=8; lvName="高樓大廈"; emoji="🏙️"; nextScore=800; prevTarget=700; }
+            else if(score >= 600){ lv=7; lvName="社區大樓"; emoji="🏙️"; nextScore=700; prevTarget=600; }
+            else if(score >= 500){ lv=6; lvName="高級別墅"; emoji="🏰"; nextScore=600; prevTarget=500; }
+            else if(score >= 400){ lv=5; lvName="庭園洋房"; emoji="🏢"; nextScore=500; prevTarget=400; }
+            else if(score >= 300){ lv=4; lvName="三合院"; emoji="🏮"; nextScore=400; prevTarget=300; }
+            else if(score >= 200){ lv=3; lvName="小房子"; emoji="🏡"; nextScore=300; prevTarget=200; }
+            else if(score >= 100){ lv=2; lvName="肥沃土地"; emoji="🌾"; nextScore=200; prevTarget=100; }
 
-            const logContainer = document.getElementById("logContainer");
+            document.getElementById("lblLevel").innerText = lv;
+            document.getElementById("lblLevelName").innerText = lvName;
+            document.getElementById("bigLblLevel").innerText = lv;
+            document.getElementById("bigLblLevelName").innerText = lvName;
+            document.getElementById("bigLandStageVisual").innerText = emoji;
+
+            // 進度條與剩餘分數計算
+            let needScore = nextScore - score;
+            if(lv === 10) needScore = 0;
+            document.getElementById("lblNextLevelScore").innerText = needScore;
+            
+            let pct = lv === 10 ? 100 : ((score - prevTarget) / (nextScore - prevTarget)) * 100;
+            document.getElementById("scoreBar").style.width = `${pct}%`;
+            document.getElementById("bigScoreBar").style.width = `${pct}%`;
+
+            // 刷亮上方的十個進化小卡
+            for(let i = 1; i <= 10; i++) {
+                const card = document.getElementById(`stageCard_${i}`);
+                if(i <= lv) {
+                    card.classList.remove("opacity-40", "bg-slate-50", "border-slate-100");
+                    card.classList.add("bg-green-50", "border-green-300", "ring-2", "ring-green-500/10");
+                } else {
+                    card.classList.add("opacity-40", "bg-slate-50", "border-slate-100");
+                    card.classList.remove("bg-green-50", "border-green-300", "ring-2", "ring-green-500/10");
+                }
+            }
+
+            // 渲染下方明細紀錄
+            const gridLogContainer = document.getElementById("gridLogContainer");
+            const todaySummaryContainer = document.getElementById("todaySummaryContainer");
+            let logsHtml = ""; let todayHtml = ""; let todayScore = 0;
+            const now = new Date();
+            const todayPrefix = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
+
             if(!currentUser.logs || currentUser.logs.length === 0) {
-                logContainer.innerHTML = `<p class="text-gray-400 text-center py-8">目前尚無行善紀錄。</p>`;
+                gridLogContainer.innerHTML = `<p class="text-gray-400 text-center py-12">尚無善行紀錄。</p>`;
+                todaySummaryContainer.innerHTML = `<p class="text-gray-400 text-center py-4">今日尚未輸入紀錄</p>`;
             } else {
-                let html = "";
+                // 照原設計倒序排列明細
                 for(let i = currentUser.logs.length - 1; i >= 0; i--) {
                     const item = currentUser.logs[i];
-                    html += `
-                        <div class="bg-slate-50 p-3 rounded-xl border-l-4 border-green-500 shadow-sm">
-                            <p class="text-xs text-gray-400 font-semibold mb-1">📅 ${item.time}</p>
-                            <p class="text-gray-700 font-medium"><span class="text-green-600 font-bold">[${item.type}]</span> ${item.desc}</p>
+                    const isToday = item.time.startsWith(todayPrefix);
+                    const isMajor = item.type.includes("10");
+                    const iconColor = isMajor ? "text-purple-500" : "text-green-500";
+                    const icon = isMajor ? "fa-circle-dharmachakra" : "fa-circle-check";
+                    const scoreLabel = isMajor ? "+10" : "+1";
+
+                    logsHtml += `
+                        <div class="flex items-center justify-between p-2 border-b border-slate-50 hover:bg-slate-50 transition rounded-lg">
+                            <div class="flex items-center gap-2 max-w-[75%]">
+                                <span class="text-slate-400 text-[10px] whitespace-nowrap font-medium">${item.time.split(' ')[0]}</span>
+                                <i class="fa-solid ${icon} ${iconColor}"></i>
+                                <span class="text-slate-700 font-medium truncate">${item.desc}</span>
+                            </div>
+                            <span class="font-bold text-slate-700">${scoreLabel} 分</span>
                         </div>
                     `;
+
+                    if(isToday) {
+                        todayScore += isMajor ? 10 : 1;
+                        todayHtml += `
+                            <div class="flex justify-between items-center bg-slate-50 px-2 py-1 rounded">
+                                <span class="truncate pr-2">📌 ${item.desc}</span>
+                                <span class="font-bold shrink-0 text-green-600">${scoreLabel}分</span>
+                            </div>
+                        `;
+                    }
                 }
-                logContainer.innerHTML = html;
+                gridLogContainer.innerHTML = logsHtml;
+                todaySummaryContainer.innerHTML = todayHtml || `<p class="text-gray-400 text-center py-4">今日尚未輸入紀錄</p>`;
             }
+            document.getElementById("lblTodayScore").innerText = todayScore;
+
+            // 渲染班級排行榜 (依據總積分降序排名)
+            const leaderboardContainer = document.getElementById("leaderboardContainer");
+            const sortedUsers = Object.values(allUsersData).sort((a,b) => b.score - a.score);
+            let lbHtml = "";
+            
+            sortedUsers.slice(0, 5).forEach((u, index) => {
+                const isMe = u.username === currentUser.username;
+                const bgClass = isMe ? "bg-amber-50/70 border border-amber-200" : "bg-slate-50";
+                let medal = `<span class="w-5 h-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-[10px]">${index+1}</span>`;
+                if(index === 0) medal = "🥇";
+                if(index === 1) medal = "🥈";
+                if(index === 2) medal = "🥉";
+
+                lbHtml += `
+                    <div class="flex items-center justify-between p-2 rounded-xl text-xs ${bgClass}">
+                        <div class="flex items-center gap-2">
+                            ${medal}
+                            <i class="fa-solid fa-user text-slate-400"></i>
+                            <span class="font-bold text-slate-700">${u.nickname} ${isMe ? '(我)' : ''}</span>
+                        </div>
+                        <span class="font-black text-slate-700">${u.score} 分</span>
+                    </div>
+                `;
+            });
+            leaderboardContainer.innerHTML = lbHtml;
         }
 
         function submitKindness() {
             const desc = document.getElementById("kindnessDesc").value.trim();
-            if(!desc) { alert("請寫下您的具體善行描述！"); return; }
+            if(!desc) { alert("請寫下您的具體善行描述！隨喜讚歎！"); return; }
 
             const typeVal = document.querySelector('input[name="kindnessType"]:checked').value;
-            const scoreVal = typeVal === "daily" ? 1 : 5;
-            const typeText = typeVal === "daily" ? "每日善行 +1分" : "重大善舉 +5分";
+            const scoreVal = typeVal === "daily" ? 1 : 10;
+            const typeText = typeVal === "daily" ? "每日善行 +1分" : "重大善舉 +10分";
 
             const now = new Date();
             const timeString = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-
             const logItem = { time: timeString, type: typeText, desc: desc };
-            showGlobalStatus(true, "正在上傳功德至雲端...");
 
-            // 寫入同樣改用強效 JSONP 穿透法
+            closeKindnessModal();
+            showGlobalStatus(true, "正在將功德打包上傳至雲端...");
+
             const callbackName = "jsonpKindness_" + Date.now();
             window[callbackName] = function(data) {
                 if(data.result === "success") {
@@ -252,10 +540,7 @@
                     document.getElementById("kindnessDesc").value = "";
                     showGlobalStatus(false);
                     renderUserUI();
-                } else {
-                    alert("紀錄失敗！");
-                    showGlobalStatus(false);
-                }
+                } else { alert("紀錄失敗！"); showGlobalStatus(false); }
                 document.getElementById(callbackName).remove();
                 delete window[callbackName];
             };
@@ -267,19 +552,10 @@
             document.body.appendChild(script);
         }
 
-        function updateScoreHint(val) { document.getElementById("btnScoreHint").innerText = `+${val}`; }
-
-        function showGlobalStatus(show, msg = "", iconHtml = null) {
-            const statusBox = document.getElementById("globalStatus");
-            const statusMsg = document.getElementById("statusMessage");
-            const statusIcon = document.getElementById("statusIcon");
-            if(show) {
-                statusBox.classList.remove("hidden"); statusMsg.innerText = msg;
-                if(iconHtml) statusIcon.innerHTML = `<span class="text-3xl">${iconHtml}</span>`;
-                else statusIcon.innerHTML = `<div class="loading-spinner"></div>`;
-            } else { statusBox.classList.add("hidden"); }
-        }
-
+        function openKindnessModal() { document.getElementById("kindnessModal").classList.remove("hidden"); document.getElementById("kindnessModal").classList.add("flex"); }
+        function closeKindnessModal() { document.getElementById("kindnessModal").classList.add("hidden"); document.getElementById("kindnessModal").classList.remove("flex"); }
+        function updateBtnScore(val) { document.getElementById("modalBtnScore").innerText = val; }
+        function showGlobalStatus(show, msg = "") { const box = document.getElementById("globalStatus"); document.getElementById("statusMessage").innerText = msg; if(show) box.classList.remove("hidden"); else box.classList.add("hidden"); }
         function logout() { localStorage.removeItem("kindness_user"); location.reload(); }
     </script>
 </body>
