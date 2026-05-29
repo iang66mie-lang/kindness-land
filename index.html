@@ -457,3 +457,85 @@
                 for(let i = rawLogs.length - 1; i >= 0; i--) {
                     const item = rawLogs[i];
                     const isToday = item.time ? item.time.startsWith(todayPrefix) : false;
+                    const isMajor = item.type ? item.type.includes("10") : false;
+                    const scoreLabel = isMajor ? "+10" : "+1";
+
+                    logsHtml += `
+                        <div class="flex items-center justify-between p-2 border-b border-slate-50 hover:bg-slate-50 transition rounded-lg">
+                            <div class="flex items-center gap-2 max-w-[75%]">
+                                <i class="fa-solid fa-circle-check ${isMajor?'text-purple-500':'text-green-500'}"></i>
+                                <span class="text-slate-700 font-medium truncate">${item.desc}</span>
+                            </div>
+                            <span class="font-bold text-slate-700">${scoreLabel} 分</span>
+                        </div>
+                    `;
+                    if(isToday) {
+                        todayScore += isMajor ? 10 : 1;
+                        todayHtml += `<div class="bg-slate-50 px-2 py-0.5 rounded truncate">📌 ${item.desc}</div>`;
+                    }
+                }
+                gridLogContainer.innerHTML = logsHtml;
+                todaySummaryContainer.innerHTML = todayHtml || `<p class="text-gray-400 text-center py-2 text-xs">無紀錄</p>`;
+            }
+            document.getElementById("lblTodayScore").innerText = todayScore;
+
+            const leaderboardContainer = document.getElementById("leaderboardContainer");
+            const sortedUsers = Object.values(allUsersData).sort((a,b) => (b.score||0) - (a.score||0));
+            let lbHtml = "";
+            sortedUsers.slice(0, 5).forEach((u, index) => {
+                if(!u.nickname) return;
+                const isMe = u.username === currentUser.username;
+                lbHtml += `
+                    <div class="flex items-center justify-between p-2 rounded-xl text-xs ${isMe?'bg-amber-50 border border-amber-200':'bg-slate-50'}">
+                        <div class="flex items-center gap-2"><span>${index===0?'🥇':index===1?'🥈':index===2?'🥉':'👤'}</span><span class="font-bold text-slate-700">${u.nickname}</span></div>
+                        <span class="font-black text-slate-700">${u.score||0} 分</span>
+                    </div>
+                `;
+            });
+            leaderboardContainer.innerHTML = lbHtml || `<div class="text-gray-400 text-center py-8">暫無數據</div>`;
+        }
+
+        function submitKindness() {
+            const desc = document.getElementById("kindnessDesc").value.trim();
+            if(!desc) { alert("請寫下您的具體善行描述！"); return; }
+
+            const typeVal = document.querySelector('input[name="kindnessType"]:checked').value;
+            const scoreVal = typeVal === "daily" ? 1 : 10;
+            const typeText = typeVal === "daily" ? "每日善行 +1分" : "重大善舉 +10分";
+
+            const now = new Date();
+            const timeString = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const logItem = { time: timeString, type: typeText, desc: desc };
+
+            closeKindnessModal();
+            showGlobalStatus(true, "正在將功德打包上傳至雲端...");
+
+            const callbackName = "jsonpKindness_" + Date.now();
+            window[callbackName] = function() {
+                alert("✨ 善行已成功記錄！功德無量！");
+                currentUser.score = parseInt(currentUser.score || 0) + scoreVal;
+                if(!currentUser.logs) currentUser.logs = [];
+                currentUser.logs.push(logItem);
+                document.getElementById("kindnessDesc").value = "";
+                showGlobalStatus(false);
+                renderUserUI();
+            };
+
+            const payload = { username: currentUser.username, scoreVal: scoreVal, logItem: logItem };
+            const script = document.createElement("script");
+            script.id = callbackName;
+            script.src = `${SCRIPT_URL}?action=addKindness&callback=${callbackName}&data=${encodeURIComponent(JSON.stringify(payload))}`;
+            document.body.appendChild(script);
+
+            fetch(`${SCRIPT_URL}?action=addKindness&data=${encodeURIComponent(JSON.stringify(payload))}`, {mode:'no-cors'});
+            setTimeout(() => { if(!document.getElementById("globalStatus").classList.contains("hidden")){ window[callbackName]({}); } }, 2000);
+        }
+
+        function openKindnessModal() { document.getElementById("kindnessModal").className = "fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"; }
+        function closeKindnessModal() { document.getElementById("kindnessModal").className = "fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4"; }
+        function updateBtnScore(val) { document.getElementById("modalBtnScore").innerText = val; }
+        function showGlobalStatus(show, msg = "") { const box = document.getElementById("globalStatus"); document.getElementById("statusMessage").innerText = msg; if(show) box.classList.remove("hidden"); else box.classList.add("hidden"); }
+        function logout() { localStorage.removeItem("kindness_user"); location.reload(); }
+    </script>
+</body>
+</html>
