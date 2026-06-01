@@ -68,17 +68,14 @@
             <div class="lg:col-span-2 space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-md text-center">
                     <h3 class="text-lg font-bold text-gray-700 mb-2">我的善意家園</h3>
-                    
                     <div class="flex justify-center my-4 h-44 items-center">
                         <div id="landStageVisual" class="w-full h-full flex items-center justify-center"></div>
                     </div>
-                    
                     <p class="text-sm text-gray-500">目前等級：<span id="landLevelName" class="font-extrabold text-orange-600 text-base">功德萌芽幼苗 (0 分)</span></p>
                 </div>
 
                 <div class="bg-white p-6 rounded-2xl shadow-md">
                     <h3 class="text-lg font-bold text-gray-700 mb-4">✍️ 每日造集資糧功德回報</h3>
-                    
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 text-center">
                         <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
                             <input type="radio" name="kindnessType" value="廣論班上課" checked onclick="updateScoreHint(2)" class="absolute top-2 left-2">
@@ -164,6 +161,7 @@
     </main>
 
     <script>
+        // ⚠️ 請記得把這裡換成你點擊「新部署」後產生的最新 exec 網址！
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzBeHqFPnUEiRbkIF2U8j4NVWQ96nUDGLDGyFNicaR3AC54DH_EBzI8sKPddz8vulgJyQ/exec";
         
         let allUsersData = {};
@@ -192,26 +190,32 @@
         }
 
         window.onload = function() {
-            fetchDatabase();
+            fetchDatabase(true); // 初次載入
         };
 
-        function fetchDatabase() {
-            showGlobalStatus(true, "正在連線至善之大地資料庫...");
+        // 🔄 增強版：fetchDatabase 支援無痛背景重新整理
+        function fetchDatabase(isFirstLoad = false) {
+            if (isFirstLoad) {
+                showGlobalStatus(true, "正在連線至善之大地資料庫...");
+            }
             
-            const callbackName = "jsonpCallback_" + Date.now();
+            const callbackName = "jsonpCallback_" + Date.now() + Math.floor(Math.random() * 1000);
             window[callbackName] = function(data) {
                 if(data.result === "success") {
                     allUsersData = data.users || {};
                     showGlobalStatus(false);
+                    
+                    // 如果有登入中，同步更新當前使用者的最新資料
                     const savedUser = localStorage.getItem("kindness_user");
                     if(savedUser && allUsersData[savedUser]) {
+                        currentUser = allUsersData[savedUser]; // 確保抓到雲端最新分數
                         loginAs(savedUser);
-                    } else {
+                    } else if (isFirstLoad) {
                         document.getElementById("authSection").classList.remove("hidden");
                         document.getElementById("leaderboardSection").classList.add("hidden");
                     }
                 } else {
-                    showGlobalStatus(true, "⚠️ 載入資料庫失敗！", "❌");
+                    if (isFirstLoad) showGlobalStatus(true, "⚠️ 載入資料庫失敗！", "❌");
                 }
                 document.getElementById(callbackName).remove();
                 delete window[callbackName];
@@ -219,7 +223,8 @@
 
             const script = document.createElement("script");
             script.id = callbackName;
-            script.src = `${SCRIPT_URL}?action=getAllUsers&callback=${callbackName}&_nocache=${Date.now()}`;
+            // 💡 加入隨機數防快取，確保每次都能跟 Google 拿到最即時的各帳號分數
+            script.src = `${SCRIPT_URL}?action=getAllUsers&callback=${callbackName}&_nocache=${Date.now()}_${Math.random()}`;
             document.body.appendChild(script);
         }
 
@@ -269,8 +274,8 @@
             document.getElementById("authSection").classList.add("hidden");
             document.getElementById("gameSection").classList.remove("hidden");
             document.getElementById("userStatus").classList.remove("hidden");
-            
             document.getElementById("leaderboardSection").classList.remove("hidden");
+            
             renderLeaderboardAndWorld(); 
             renderUserUI();
         }
@@ -282,8 +287,6 @@
 
             const stage = getStageInfo(currentUser.score);
             document.getElementById("landStageVisual").innerHTML = `<img src="images/${stage.file}" alt="${stage.name}" class="h-44 w-auto object-contain mx-auto rounded-xl drop-shadow-md">`;
-            
-            // 🌟 放大主要家園狀態下的分數：高亮加粗
             document.getElementById("landLevelName").innerHTML = `${stage.name} (<span class="text-orange-600 font-black text-lg">${displayScore}</span> 分)`;
 
             const logContainer = document.getElementById("logContainer");
@@ -317,7 +320,6 @@
                 const stage = getStageInfo(u.score);
                 const uScore = u.score > 9999 ? 9999 : u.score;
                 
-                // 🌟 鄰居小卡片內的分數：放大字體大小 (text-sm)、使用鮮明飽滿的深綠色背景與大粗體字
                 worldHtml += `
                     <div class="bg-slate-50 p-3 rounded-xl text-center border text-xs border-gray-100 shadow-sm flex flex-col justify-between items-center">
                         <img src="images/${stage.file}" class="w-16 h-16 object-contain mb-1 rounded-md drop-shadow-sm">
@@ -332,7 +334,6 @@
             userList.slice(0, 10).forEach((u, idx) => {
                 const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `第 ${idx+1} 名`;
                 const uScore = u.score > 9999 ? 9999 : u.score;
-                // 🌟 排行榜列表內的分數與名次：名次與名字放大，分數改用亮眼晴空藍，字級調大至 text-sm，並極度加粗 (font-black)
                 rankHtml += `
                     <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl text-xs font-medium shadow-2xs">
                         <span class="text-gray-700 font-bold text-sm">${medal} ${u.nickname}</span>
@@ -376,19 +377,16 @@
             window[callbackName] = function(data) {
                 if(data.result === "success") {
                     alert("✨ 善行已成功記錄！功德無量！");
-                    currentUser.score += scoreVal;
-                    if(!currentUser.logs) currentUser.logs = [];
-                    currentUser.logs.push(logItem);
                     document.getElementById("kindnessDesc").value = "";
-                    showGlobalStatus(false);
                     
-                    renderUserUI();
-                    renderLeaderboardAndWorld();
+                    // 💡 重點修正：不再只盲目加自己畫面的分數，而是直接重新向資料庫 Fetch 一次！
+                    // 這樣別人剛剛在其他手機上傳的分數，也會在這一秒被同步重新載入進來！
+                    fetchDatabase(false); 
                 } else {
                     alert("紀錄失敗！");
-                    showGlobalStatus(false);
                 }
                 
+                showGlobalStatus(false);
                 isSubmitting = false;
                 btnSubmit.disabled = false;
                 btnSubmit.innerText = "送出善行，灌溉大地 ✨";
