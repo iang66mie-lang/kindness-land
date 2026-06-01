@@ -88,11 +88,16 @@
             <div class="lg:col-span-2 space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-md text-center">
                     <h3 class="text-lg font-bold text-gray-700 mb-2">我的善意家園</h3>
-                    <div id="landStageVisual" class="text-6xl my-4">🌱</div>
+                    
+                    <!-- 🖼️ 這裡修正為：同時支援圖片 URL 與 預設表情符號 -->
+                    <div class="flex justify-center my-4 h-24 items-center">
+                        <div id="landStageVisual" class="text-6xl">🌱</div>
+                    </div>
+                    
                     <p class="text-sm text-gray-500">目前等級：<span id="landLevelName" class="font-bold text-green-600">功德幼苗</span></p>
                 </div>
 
-                <!-- ✍️ 修改後的全新八大積分選項區塊 -->
+                <!-- ✍️ 八大積分選項區塊 -->
                 <div class="bg-white p-6 rounded-2xl shadow-md">
                     <h3 class="text-lg font-bold text-gray-700 mb-4">✍️ 每日造集資糧功德回報</h3>
                     
@@ -228,7 +233,6 @@
             fetchDatabase();
         };
 
-        // 🟢 修正點：加入隨清快取機制 (_nocache)，避免因為瀏覽器暫存拿不到最新的歷史紀錄
         function fetchDatabase(callbackAfterFetch = null) {
             showGlobalStatus(true, "正在同步雲端功德簿...");
             
@@ -244,7 +248,6 @@
                         renderUserUI();
                         if(callbackAfterFetch) callbackAfterFetch();
                         
-                        // 只有初次加載且不是在個人資料分頁時才顯示遊戲主頁
                         if(currentActiveTab === "game") {
                             document.getElementById("gameSection").classList.remove("hidden");
                             document.getElementById("userStatus").classList.remove("hidden");
@@ -327,14 +330,28 @@
             document.getElementById("navNickname").innerText = `${currentUser.nickname} (${currentUser.gender})`;
             document.getElementById("navScore").innerText = currentUser.score;
 
-            let stage = "🌱"; let levelName = "功德幼苗 (0分+)"; const score = currentUser.score;
-            if(score >= 150) { stage = "🏛️"; levelName = "終極庇護所・兜率內院 (150分+)"; }
-            else if(score >= 80) { stage = "🕌"; levelName = "天空大梵寺 (80分+)"; }
-            else if(score >= 50) { stage = "🏰"; levelName = "行善黃金古堡 (50分+)"; }
-            else if(score >= 20) { stage = "🏡"; levelName = "福報溫馨別墅 (20分+)"; }
-            else if(score >= 10)  { stage = "🌿"; levelName = "善意茂盛灌木 (10分+)"; }
+            // 🛠️ 檢查點：原本網頁的圖片欄位通常是 imageUrl、avatar 或是依照積分判斷的圖網址
+            // 如果你的後台資料有特定的圖片網址欄位（例如：currentUser.imageUrl），系統會優先選用它。
+            let displayVisual = "";
+            let levelName = "功德幼苗 (0分+)"; 
+            const score = currentUser.score;
 
-            document.getElementById("landStageVisual").innerText = stage;
+            if (currentUser.imageUrl || currentUser.avatar || currentUser.stageImage) {
+                // 自動抓取後台既有的圖片網址
+                const imgUrl = currentUser.imageUrl || currentUser.avatar || currentUser.stageImage;
+                displayVisual = `<img src="${imgUrl}" alt="Land Stage" class="h-24 w-auto object-contain mx-auto rounded-lg">`;
+            } else {
+                // 如果後台完全沒有設定任何圖片網址，才採用 Emoji 保底（避免畫面空白）
+                let emoji = "🌱";
+                if(score >= 150) { emoji = "🏛️"; levelName = "終極庇護所・兜率內院 (150分+)"; }
+                else if(score >= 80) { emoji = "🕌"; levelName = "天空大梵寺 (80分+)"; }
+                else if(score >= 50) { emoji = "🏰"; levelName = "行善黃金古堡 (50分+)"; }
+                else if(score >= 20) { emoji = "🏡"; levelName = "福報溫馨別墅 (20分+)"; }
+                else if(score >= 10) { emoji = "🌿"; levelName = "善意茂盛灌木 (10分+)"; }
+                displayVisual = emoji;
+            }
+
+            document.getElementById("landStageVisual").innerHTML = displayVisual;
             document.getElementById("landLevelName").innerText = levelName;
 
             const logContainer = document.getElementById("logContainer");
@@ -342,7 +359,6 @@
                 logContainer.innerHTML = `<p class="text-gray-400 text-center py-8">目前尚無行善紀錄。</p>`;
             } else {
                 let html = "";
-                // 由新到舊排序顯示
                 for(let i = currentUser.logs.length - 1; i >= 0; i--) {
                     const item = currentUser.logs[i];
                     html += `
@@ -433,14 +449,12 @@
             document.body.appendChild(script);
         }
 
-        // 🟢 修正點：送出紀錄後，除了在前端立即累加外，也強制透過 fetchDatabase 向雲端重新抓一次最正確、最齊全的歷史紀錄
         function submitKindness() {
             const desc = document.getElementById("kindnessDesc").value.trim();
             if(!desc) { alert("請寫下您的具體善行或心得描述！"); return; }
 
             const typeVal = document.querySelector('input[name="kindnessType"]:checked').value;
             
-            // 根據全新要求動態指派分數
             let scoreVal = 1;
             if (typeVal === "廣論班上課") scoreVal = 2;
             else if (typeVal === "每日善行") scoreVal = 3;
@@ -464,7 +478,6 @@
                 if(data.result === "success") {
                     alert("✨ 善行已成功記錄！功德無量！");
                     document.getElementById("kindnessDesc").value = "";
-                    // 關鍵修正：上傳完成後，立刻再次重新同步完整資料庫，保證資料永不漏接
                     fetchDatabase();
                 } else {
                     alert("紀錄失敗，請檢查網路連線！");
