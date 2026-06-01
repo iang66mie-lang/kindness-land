@@ -5,347 +5,264 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>善之大地 Land of Kindness</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 隱藏捲軸 */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        /* 旋轉動畫 */
         .loading-spinner {
             border: 4px solid rgba(0, 0, 0, 0.1);
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            border-left-color: #16a34a;
+            border-left-color: #3498db;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-[#edf3f6] min-h-screen text-slate-700 font-sans antialiased">
+<body class="bg-slate-100 min-h-screen font-sans">
 
-    <div id="globalStatus" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-xs mx-auto">
-            <div id="statusIcon" class="flex justify-center mb-4"><div class="loading-spinner"></div></div>
-            <p id="statusMessage" class="text-slate-600 font-semibold text-sm">正在連線至善之大地資料庫...</p>
+    <header class="bg-green-600 text-white p-4 shadow-md flex justify-between items-center">
+        <h1 class="text-xl font-bold flex items-center gap-2">🌱 善之大地 <span id="headerClassName" class="text-xs bg-green-700 px-2 py-1 rounded">載入中...</span></h1>
+        <div id="userStatus" class="hidden text-sm flex items-center gap-3">
+            <span id="navNickname" class="font-semibold"></span> (得分: <span id="navScore" class="text-yellow-300 font-bold">0</span>)
+            <button id="btnSwitchTab" onclick="switchTab()" class="bg-blue-500 hover:bg-blue-600 text-xs px-2 py-1 rounded transition">修改基本資料</button>
+            <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-xs px-2 py-1 rounded transition">登出</button>
         </div>
-    </div>
+    </header>
 
-    <section id="authSection" class="hidden min-h-screen flex items-center justify-center p-4">
-        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-md">
-            <div class="text-center mb-6">
-                <span class="text-4xl">🌱</span>
-                <h2 class="text-2xl font-bold text-slate-800 mt-2">進入善之大地</h2>
-                <p class="text-xs text-gray-400 mt-1">25春001班 善行累積系統</p>
-            </div>
+    <main class="max-w-6xl mx-auto p-4">
+        <div id="globalStatus" class="bg-white p-6 rounded-xl shadow-md text-center my-8 max-w-md mx-auto">
+            <div id="statusIcon" class="flex justify-center mb-3"><div class="loading-spinner"></div></div>
+            <p id="statusMessage" class="text-gray-600 font-medium">正在連線至善之大地資料庫...</p>
+        </div>
+
+        <!-- 建立角色 / 登入區塊 -->
+        <section id="authSection" class="hidden max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl my-8">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">建立角色 / 登入</h2>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">使用者帳號</label>
-                    <input type="text" id="username" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-green-500 transition" placeholder="請輸入帳號">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">使用者帳號 <span class="text-red-500">*</span></label>
+                    <input type="text" id="username" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="請輸入英文或數字">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">密碼</label>
-                    <input type="password" id="password" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-green-500 transition" placeholder="請輸入密碼">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">密碼 <span class="text-red-500">*</span></label>
+                    <input type="password" id="password" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="請輸入密碼">
                 </div>
-                <div class="border-t border-dashed border-slate-100 my-4 pt-4">
-                    <p class="text-center text-xs text-amber-500 mb-2">💡 新玩家首次登入會以此資料直接創角</p>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">遊戲暱稱 (新創角必填)</label>
-                    <input type="text" id="nickname" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-green-500 transition" placeholder="例如：隨喜功德小行者">
+                
+                <hr class="border-gray-200 my-4">
+                <p class="text-xs text-amber-500 font-semibold text-center">💡 初次登入將自動註冊，請務必完整填寫以下創角資料：</p>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">遊戲暱稱</label>
+                    <input type="text" id="nickname" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="例如：隨喜功德小行者">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">性別</label>
+                        <select id="gender" class="w-full px-3 py-2 border rounded-lg outline-none">
+                            <option value="師兄">師兄</option>
+                            <option value="師姐">師姐</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">班級名稱</label>
+                        <input type="text" id="className" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="例如：25春001班">
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">性別</label>
-                    <select id="gender" class="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-green-500 transition">
-                        <option value="師兄">師兄</option>
-                        <option value="師姐">師姐</option>
-                    </select>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">聯絡電話</label>
+                    <input type="tel" id="phone" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="例如：0912345678">
                 </div>
-                <button onclick="handleAuth()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95 mt-2">
-                    登入 / 創角 🚀
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">電子郵件 (Email)</label>
+                    <input type="email" id="email" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="例如：kindness@example.com">
+                </div>
+                
+                <button onclick="handleAuth()" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg shadow-md mt-2">
+                    進入善之大地 🚀
                 </button>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <div id="gameSection" class="hidden min-h-screen flex flex-col lg:flex-row">
-        
-        <header class="lg:hidden bg-white border-b border-slate-100 p-4 flex justify-between items-center sticky top-0 z-30 shadow-xs">
-            <div class="flex items-center gap-2">
-                <span class="text-2xl">🌱</span>
-                <span class="font-black text-slate-800 text-lg">善之大地</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <button onclick="openKindnessModal()" class="bg-green-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs"><i class="fa-solid fa-plus mr-1"></i>輸入善行</button>
-                <button onclick="toggleMobileMenu(true)" class="text-slate-600 text-xl p-1"><i class="fa-solid fa-bars"></i></button>
-            </div>
-        </header>
-
-        <aside id="sidebarMenu" class="fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-100 flex flex-col justify-between p-4 shrink-0 z-40 transform -translate-x-full transition-transform duration-300 lg:translate-x-0 lg:static lg:h-screen">
-            <div>
-                <div class="flex items-center justify-between px-2 py-4 border-b border-slate-100 mb-6">
-                    <div class="flex items-center gap-3">
-                        <span class="text-3xl text-green-600">🌱</span>
-                        <div>
-                            <h1 class="text-xl font-black text-[#5c4a3c] tracking-wider">善之大地</h1>
-                            <p class="text-[10px] text-gray-400 font-bold tracking-tight">Land of Kindness</p>
-                        </div>
-                    </div>
-                    <button onclick="toggleMobileMenu(false)" class="lg:hidden text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+        <!-- 🏠 遊戲主要畫面區塊 -->
+        <section id="gameSection" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 my-4">
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-md text-center">
+                    <h3 class="text-lg font-bold text-gray-700 mb-2">我的善意家園</h3>
+                    <div id="landStageVisual" class="text-6xl my-4">🌱</div>
+                    <p class="text-sm text-gray-500">目前等級：<span id="landLevelName" class="font-bold text-green-600">功德幼苗</span></p>
                 </div>
 
-                <div class="bg-slate-50 rounded-2xl p-4 mb-4 relative">
-                    <div class="flex items-center gap-3 mb-3">
-                        <div id="userAvatar" onclick="openAvatarModal()" class="w-12 h-12 bg-sky-100 rounded-full overflow-hidden border-2 border-green-200 flex items-center justify-center text-2xl cursor-pointer hover:scale-110 active:scale-95 transition shadow-xs relative group">
-                            👦
-                            <div class="absolute inset-0 bg-black/40 text-white text-[8px] font-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition rounded-full">換頭像</div>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-1">
-                                <span id="navNickname" class="font-bold text-slate-800 text-sm">小善同學</span>
-                            </div>
-                            <span class="bg-white border border-slate-200 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded-full">25春001班</span>
-                        </div>
+                <!-- ✍️ 修改後的全新八大積分選項區塊 -->
+                <div class="bg-white p-6 rounded-2xl shadow-md">
+                    <h3 class="text-lg font-bold text-gray-700 mb-4">✍️ 每日造集資糧功德回報</h3>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 text-center">
+                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
+                            <input type="radio" name="kindnessType" value="廣論班上課" checked onclick="updateScoreHint(2)" class="absolute top-2 left-2">
+                            <div class="text-2xl mb-1">📖</div>
+                            <p class="font-medium text-xs">廣論班上課</p>
+                            <p class="text-[10px] text-gray-400 font-bold">+2 分</p>
+                        </label>
+                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
+                            <input type="radio" name="kindnessType" value="每日善行" onclick="updateScoreHint(3)" class="absolute top-2 left-2">
+                            <div class="text-2xl mb-1">☀️</div>
+                            <p class="font-medium text-xs">每日善行</p>
+                            <p class="text-[10px] text-gray-400 font-bold">+3 分</p>
+                        </label>
+                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
+                            <input type="radio" name="kindnessType" value="誦經" onclick="updateScoreHint(3)" class="absolute top-2 left-2">
+                            <div class="text-2xl mb-1">🙏</div>
+                            <p class="font-medium text-xs">誦經</p>
+                            <p class="text-[10px] text-gray-400 font-bold">+3 分</p>
+                        </label>
+                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
+                            <input type="radio" name="kindnessType" value="聽音檔" onclick="updateScoreHint(3)" class="absolute top-2 left-2">
+                            <div class="text-2xl mb-1">🎧</div>
+                            <p class="font-medium text-xs">聽音檔</p>
+                            <p class="text-[10px] text-gray-400 font-bold">+3 分</p>
+                        </label>
                     </div>
-                    <div class="bg-[#5c4a3c] text-white rounded-xl px-3 py-1.5 text-xs font-bold mb-2 flex justify-between items-center">
-                        <span>等級 <span id="lblLevel">1</span> <span id="lblLevelName">乾枯的土地</span></span>
-                    </div>
-                    <div class="flex items-center gap-2 text-xs font-bold text-slate-600 mb-1">
-                        <span>🍃 <span id="lblScore">0</span> 分</span>
-                    </div>
-                    <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
-                        <div id="scoreBar" class="bg-green-500 h-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-                    <p class="text-[10px] text-slate-400 font-semibold mt-1">距離下次升級：<span id="lblNextLevelScore">還需要 100 分</span></p>
-                </div>
 
-                <nav class="space-y-1">
-                    <button onclick="toggleMobileMenu(false)" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold bg-green-50 text-green-700 transition"><i class="fa-solid fa-house"></i> 我的首頁</button>
-                    <button onclick="toggleMobileMenu(false); openKindnessModal();" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i class="fa-solid fa-pen-to-square"></i> 輸入善行</button>
-                    <button onclick="toggleMobileMenu(false)" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i class="fa-solid fa-list-check"></i> 善行紀錄</button>
-                    <button onclick="toggleMobileMenu(false)" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i class="fa-solid fa-calendar-days"></i> 回顧日誌</button>
-                    <button onclick="toggleMobileMenu(false)" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i class="fa-solid fa-chart-line"></i> 排行榜</button>
-                    <button onclick="toggleMobileMenu(false)" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i class="fa-solid fa-users"></i> 班級競賽</button>
-                    <button onclick="toggleMobileMenu(false)" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i class="fa-solid fa-award"></i> 成就徽章</button>
-                </nav>
-            </div>
-            <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition mb-2"><i class="fa-solid fa-arrow-right-from-bracket"></i> 登出</button>
-        </aside>
-
-        <div id="sidebarOverlay" onclick="toggleMobileMenu(false)" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-30 hidden lg:hidden"></div>
-
-        <div class="flex-1 p-3 sm:p-4 flex flex-col xl:flex-row gap-4 overflow-y-auto lg:h-screen">
-            <div class="flex-1 space-y-4">
-                <div class="hidden lg:flex bg-white rounded-2xl p-4 shadow-xs justify-between items-center">
-                    <div class="flex items-center gap-2 text-sm font-bold text-slate-700"><i class="fa-regular fa-calendar text-green-600"></i><span id="topDateStr">2026年5月29日 星期五</span></div>
-                    <div class="flex items-center gap-4 text-xs font-semibold text-slate-400"><span>伺服器：<span class="text-green-600 font-bold">● 線上正常</span></span></div>
-                </div>
-
-                <div class="bg-white rounded-2xl p-4 shadow-xs">
-                    <h3 class="text-center text-xs font-bold text-green-700 tracking-wider mb-3 flex items-center justify-center gap-1">🍃 我的土地進化歷程 🍃</h3>
-                    <div id="stagesContainer" class="flex lg:grid lg:grid-cols-10 gap-2 overflow-x-auto no-scrollbar pb-2 lg:pb-0 snap-x">
-                        </div>
-                </div>
-
-                <div id="bigVisualCard" class="bg-white rounded-2xl p-4 sm:p-6 shadow-xs relative flex flex-col md:flex-row items-center gap-6 overflow-hidden bg-gradient-to-b from-sky-100 via-white to-slate-50 min-h-[340px]">
-                    <div class="w-full md:w-1/2 h-56 md:h-64 rounded-2xl overflow-hidden shadow-md border border-white relative flex items-center justify-center bg-slate-200">
-                        <img id="bigLandImage" src="images/stage1.png" alt="土地狀態" class="w-full h-full object-cover transition-all duration-700">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 text-center">
+                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
+                            <input type="radio" name="kindnessType" value="觀功" onclick="updateScoreHint(5)" class="absolute top-2 left-2">
+                            <div class="text-2xl mb-1">🔍</div>
+                            <p class="font-medium text-xs">觀功</p>
+                            <p class="text-[10px] text-gray-400 font-bold">+5 分</p>
+                        </label>
+                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
+                            <input type="radio" name="kindnessType" value="念恩" onclick="updateScoreHint(5)" class="absolute top-2 left-2">
+                            <div class="text-2xl mb-1">❤️</div>
+                            <p class="font-medium text-xs">念恩</p>
+                            <p class="text-[10px] text-gray-400 font-bold">+5 分</p>
+                        </label>
+                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
+                            <input type="radio" name="kindnessType" value="當義工" onclick="updateScoreHint(8)" class="absolute top-2 left-2">
+                            <div class="text-2xl mb-1">🧡</div>
+                            <p class="font-medium text-xs">當義工</p>
+                            <p class="text-[10px] text-gray-400 font-bold">+8 分</p>
+                        </label>
+                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
+                            <input type="radio" name="kindnessType" value="參加法會" onclick="updateScoreHint(8)" class="absolute top-2 left-2">
+                            <div class="text-2xl mb-1">📿</div>
+                            <p class="font-medium text-xs">參加法會</p>
+                            <p class="text-[10px] text-gray-400 font-bold">+8 分</p>
+                        </label>
                     </div>
-                    <div class="text-center md:text-left flex-1 space-y-2">
-                        <div class="bg-white/80 backdrop-blur px-5 py-4 rounded-2xl shadow-xs inline-block w-full">
-                            <p class="text-xs text-gray-400 font-bold">目前等級：<span id="bigLblLevel">1</span></p>
-                            <h4 id="bigLblLevelName" class="text-xl sm:text-2xl font-black text-[#5c4a3c] my-1">乾枯的土地</h4>
-                            <p class="text-xs text-gray-500 font-medium">目前總分：<span id="bigLblScore" class="font-bold text-green-600">0</span> 分</p>
-                            <div class="w-full bg-slate-200 h-2.5 rounded-full mt-3 overflow-hidden"><div id="bigScoreBar" class="bg-green-500 h-full transition-all duration-500" style="width:0%"></div></div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-white rounded-2xl p-4 shadow-xs flex flex-col h-[300px]">
-                        <div class="flex justify-between items-center mb-3">
-                            <h4 class="text-sm font-black text-slate-800 flex items-center gap-1.5">🌳 我的善行紀錄 (最近)</h4>
-                        </div>
-                        <div class="overflow-y-auto flex-1 no-scrollbar text-xs space-y-2" id="gridLogContainer"></div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-600 mb-1">功德迴向與具體描述</label>
+                        <textarea id="kindnessDesc" rows="3" class="w-full px-3 py-2 border rounded-lg outline-none text-sm" placeholder="填寫今天造集了什麼善業..."></textarea>
                     </div>
-                    <div class="bg-white rounded-2xl p-4 shadow-xs flex flex-col h-[300px]">
-                        <h4 class="text-sm font-black text-slate-800 mb-3 flex items-center gap-1.5">🏆 班級排行榜</h4>
-                        <div class="overflow-y-auto flex-1 no-scrollbar space-y-2" id="leaderboardContainer"></div>
-                    </div>
+                    <button onclick="submitKindness()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md transition">
+                        送出善行，灌溉大地 ✨ (<span id="btnScoreHint">+2</span>分)
+                    </button>
                 </div>
             </div>
 
-            <div class="w-full xl:w-72 space-y-4 shrink-0">
-                <div class="grid grid-cols-2 xl:grid-cols-1 gap-4">
-                    <div class="bg-white rounded-2xl p-4 shadow-xs text-center flex flex-col justify-center">
-                        <p class="text-xs text-slate-400 font-bold flex items-center justify-center gap-1"><i class="fa-regular fa-calendar-check text-green-600"></i> 今日日期</p>
-                        <h2 id="rightBigDate" class="text-lg sm:text-xl font-black text-slate-800 mt-1">2026/5/29</h2>
-                        <p id="rightBigWeek" class="text-xs font-bold text-slate-500 bg-slate-50 rounded-lg py-0.5 mt-1">星期五</p>
-                    </div>
-                    <div class="bg-white rounded-2xl p-4 shadow-xs flex flex-col justify-between h-auto xl:h-40">
-                        <h4 class="text-xs font-black text-slate-800 mb-1 flex items-center gap-1"><i class="fa-solid fa-list-ol text-green-600"></i> 今日摘要</h4>
-                        <div class="flex-1 overflow-y-auto no-scrollbar text-[11px] space-y-1 my-1 text-slate-600 max-h-16 xl:max-h-none" id="todaySummaryContainer"></div>
-                        <div class="border-t border-slate-50 pt-1 flex justify-between items-center text-xs font-bold">
-                            <span class="text-slate-500">今日：</span><span class="text-green-600"><span id="lblTodayScore" class="text-sm font-black">0</span> 分 🍃</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-2xl p-4 shadow-xs text-xs">
-                    <div class="flex justify-between items-center mb-2 font-bold text-slate-700"><span>📅 善行日曆</span><div class="flex gap-2 text-slate-400"><i class="fa-solid fa-chevron-left"></i><span id="calMonthStr">2026年5月</span><i class="fa-solid fa-chevron-right"></i></div></div>
-                    <div class="grid grid-cols-7 gap-1 text-center font-bold text-slate-400 text-[10px] mb-1"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
-                    <div class="grid grid-cols-7 gap-1 text-center font-semibold text-slate-600" id="calendarDays">
-                        <div class="py-1 text-slate-300">26</div><div class="py-1 text-slate-300">27</div><div class="py-1 text-slate-300">28</div><div class="py-1 text-slate-300">29</div><div class="py-1 text-slate-300">30</div><div class="py-1">1</div><div class="py-1">2</div>
-                        <div class="py-1">3</div><div class="py-1">4</div><div class="py-1">5</div><div class="py-1">6</div><div class="py-1">7</div><div class="py-1">8</div><div class="py-1">9</div>
-                        <div class="py-1">10</div><div class="py-1">11</div><div class="py-1">12</div><div class="py-1">13</div><div class="py-1">14</div><div class="py-1">15</div><div class="py-1">16</div>
-                        <div class="py-1">17</div><div class="py-1">18</div><div class="py-1">19</div><div class="py-1 bg-green-500 text-white rounded-full font-bold relative">20</div><div class="py-1">21</div><div class="py-1">22</div><div class="py-1">23</div>
-                        <div class="py-1">24</div><div class="py-1">25</div><div class="py-1">26</div><div class="py-1">27</div><div class="py-1">28</div><div class="py-1 bg-green-100 border border-green-500 rounded-full font-black">29</div><div class="py-1">30</div>
-                    </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md flex flex-col max-h-[600px]">
+                <h3 class="text-lg font-bold text-gray-700 mb-3">📜 善行歷史回顧日誌</h3>
+                <div id="logContainer" class="space-y-3 overflow-y-auto flex-1 pr-1 text-sm">
+                    <p class="text-gray-400 text-center py-8">目前尚無行善紀錄。</p>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <div id="kindnessModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 relative">
-            <button onclick="closeKindnessModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="text-base sm:text-lg font-black text-slate-800 mb-4 flex items-center gap-2">✍️ 填寫每日善行紀錄</h3>
+        <!-- 👤 個人資料修改區塊 -->
+        <section id="profileSection" class="hidden max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl my-4">
+            <h3 class="text-xl font-bold text-gray-800 mb-2">👤 行者基本資料</h3>
+            <p class="text-xs text-gray-400 mb-6">您可以隨時檢視或修改您的個人資料，系統會自動同步回傳雲端。</p>
+            
             <div class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl hover:bg-green-50 cursor-pointer transition">
-                        <input type="radio" name="kindnessType" value="daily" checked onclick="updateBtnScore(1)">
-                        <div class="text-xs font-bold"><p class="text-slate-800">每日善行</p><p class="text-green-600">+1 分</p></div>
-                    </label>
-                    <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl hover:bg-green-50 cursor-pointer transition">
-                        <input type="radio" name="kindnessType" value="major" onclick="updateBtnScore(10)">
-                        <div class="text-xs font-bold"><p class="text-slate-800">參加法會/重大善舉</p><p class="text-purple-600">+10 分</p></div>
-                    </label>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">使用者帳號 (無法修改)</label>
+                    <input type="text" id="profileUsername" disabled class="w-full px-3 py-2 bg-slate-50 border rounded-lg text-gray-400 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">善行具體描述</label>
-                    <textarea id="kindnessDesc" rows="3" class="w-full text-sm p-3 border border-slate-200 rounded-xl outline-none focus:border-green-500 transition placeholder-slate-300" placeholder="例如：幫忙媽媽洗碗、主動撿起地上的垃圾..."></textarea>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">遊戲暱稱</label>
+                    <input type="text" id="profileNickname" class="w-full px-3 py-2 border rounded-lg outline-none">
                 </div>
-                <button onclick="submitKindness()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-md transition transform active:scale-95">送出善行，灌溉大地 ✨ (<span id="modalBtnScore">1</span>分)</button>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">性別</label>
+                        <select id="profileGender" class="w-full px-3 py-2 border rounded-lg outline-none">
+                            <option value="師兄">師兄</option>
+                            <option value="師姐">師姐</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">班級名稱</label>
+                        <input type="text" id="profileClassName" class="w-full px-3 py-2 border rounded-lg outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">聯絡電話</label>
+                    <input type="tel" id="profilePhone" class="w-full px-3 py-2 border rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">電子郵件 (Email)</label>
+                    <input type="email" id="profileEmail" class="w-full px-3 py-2 border rounded-lg outline-none">
+                </div>
+                
+                <div class="pt-2 flex gap-3">
+                    <button onclick="switchTab('game')" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition">
+                        返回首頁
+                    </button>
+                    <button onclick="submitUpdateProfile()" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 rounded-lg shadow-md transition">
+                        儲存修改 💾
+                    </button>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <div id="avatarModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 relative animate-fade-in">
-            <button onclick="closeAvatarModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="text-base font-black text-slate-800 mb-4 text-center flex items-center justify-center gap-2">✨ 選擇你的行者造型</h3>
-            
-            <div class="grid grid-cols-4 gap-4 p-2 justify-items-center max-h-64 overflow-y-auto no-scrollbar">
-                <button onclick="changeAvatar('👦')" class="text-3xl p-2 bg-slate-50 border border-slate-200 hover:border-green-500 rounded-xl shadow-xs transition hover:scale-110 active:scale-95">👦</button>
-                <button onclick="changeAvatar('👧')" class="text-3xl p-2 bg-slate-50 border border-slate-200 hover:border-green-500 rounded-xl shadow-xs transition hover:scale-110 active:scale-95">👧</button>
-                <button onclick="changeAvatar('👨‍🦲')" class="text-3xl p-2 bg-slate-50 border border-slate-200 hover:border-green-500 rounded-xl shadow-xs transition hover:scale-110 active:scale-95">👨‍🦲</button>
-                <button onclick="changeAvatar('👩‍🦲')" class="text-3xl p-2 bg-slate-50 border border-slate-200 hover:border-green-500 rounded-xl shadow-xs transition hover:scale-110 active:scale-95">👩‍🦲</button>
-                <button onclick="changeAvatar('🧙‍♂️')" class="text-3xl p-2 bg-slate-50 border border-slate-200 hover:border-green-500 rounded-xl shadow-xs transition hover:scale-110 active:scale-95">🧙‍♂️</button>
-                <button onclick="changeAvatar('🧙‍♀️')" class="text-3xl p-2 bg-slate-50 border border-slate-200 hover:border-green-500 rounded-xl shadow-xs transition hover:scale-110 active:scale-95">🧙‍♀️</button>
-                <button onclick="changeAvatar('🐼')" class="text-3xl p-2 bg-slate-50 border border-slate-200 hover:border-green-500 rounded-xl shadow-xs transition hover:scale-110 active:scale-95">🐼</button>
-                <button onclick="changeAvatar('🦁')" class="text-3xl p-2 bg-slate-50 border border-slate-200 hover:border-green-500 rounded-xl shadow-xs transition hover:scale-110 active:scale-95">🦁</button>
-                <button onclick="changeAvatar('🐱')" class="text-3xl p-2 bg-slate-50 border border-slate-200 hover:border-green-500 rounded-xl shadow-xs transition hover:scale-110 active:scale-95">🐱</button>
-                <button onclick="changeAvatar('🦊')" class="text-3xl p-2 bg-slate-50 border border-slate-200 hover:border-green-500 rounded-xl shadow-xs transition hover:scale-110 active:scale-95">🦊</button>
-                <button onclick="changeAvatar('🦥')" class="text-3xl p-2 bg-slate-50 border border-slate-200 hover:border-green-500 rounded-xl shadow-xs transition hover:scale-110 active:scale-95">🦥</button>
-                <button onclick="changeAvatar('🦉')" class="text-3xl p-2 bg-slate-50 border border-slate-200 hover:border-green-500 rounded-xl shadow-xs transition hover:scale-110 active:scale-95">🦉</button>
-            </div>
-            <p class="text-[10px] text-slate-400 text-center mt-4">💡 提示：更換後大頭照會安全保存在本裝置中</p>
-        </div>
-    </div>
+        </section>
+    </main>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzBeHqFPnUEiRbkIF2U8j4NVWQ96nUDGLDGyFNicaR3AC54DH_EBzI8sKPddz8vulgJyQ/exec";
+        
         let allUsersData = {};
         let currentUser = null;
-
-        const STAGE_CONFIG = [
-            { lv: 1, name: "乾枯的土地", target: 0, img: "images/stage1.png" },
-            { lv: 2, name: "肥沃的土地", target: 100, img: "images/stage2.png" },
-            { lv: 3, name: "小房子", target: 200, img: "images/stage3.png" },
-            { lv: 4, name: "三合院", target: 300, img: "images/stage4.png" },
-            { lv: 5, name: "庭園洋房", target: 400, img: "images/stage5.png" },
-            { lv: 6, name: "高級別墅", target: 500, img: "images/stage6.png" },
-            { lv: 7, name: "社區大樓", target: 600, img: "images/stage7.png" },
-            { lv: 8, name: "高樓大廈", target: 700, img: "images/stage8.png" },
-            { lv: 9, name: "摩天大樓", target: 800, img: "images/stage9.png" },
-            { lv: 10, name: "天空寺院", target: 1000, img: "images/stage10.png" },
-            { lv: 11, name: "兜率內院", target: 1200, img: "images/stage11.png" }
-        ];
+        let currentActiveTab = "game";
 
         window.onload = function() {
-            initDateDisplay();
-            renderStagesHeader();
             fetchDatabase();
         };
 
-        function toggleMobileMenu(open) {
-            const menu = document.getElementById("sidebarMenu");
-            const overlay = document.getElementById("sidebarOverlay");
-            if (open) { menu.classList.remove("-translate-x-full"); overlay.classList.remove("hidden"); } 
-            else { menu.classList.add("-translate-x-full"); overlay.classList.add("hidden"); }
-        }
-
-        function initDateDisplay() {
-            const now = new Date();
-            const weeks = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
-            document.getElementById("topDateStr").innerText = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${weeks[now.getDay()]}`;
-            document.getElementById("rightBigDate").innerText = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
-            document.getElementById("rightBigWeek").innerText = weeks[now.getDay()];
-            document.getElementById("calMonthStr").innerText = `${now.getFullYear()}年${now.getMonth()+1}月`;
-        }
-
-        function renderStagesHeader() {
-            const container = document.getElementById("stagesContainer");
-            let html = "";
-            for(let i = 0; i < 10; i++) {
-                const s = STAGE_CONFIG[i];
-                html += `
-                    <div id="stageCard_${s.lv}" class="min-w-[85px] lg:min-w-0 bg-slate-50 p-1.5 rounded-xl border border-slate-100 text-center text-[10px] font-bold opacity-30 snap-center transition-all duration-300">
-                        <span class="bg-[#5c4a3c] text-white w-4 h-4 rounded-full inline-flex items-center justify-center mb-1 text-[9px]">${s.lv}</span>
-                        <div class="w-12 h-12 mx-auto rounded-lg overflow-hidden border border-slate-200 mb-1 bg-white">
-                            <img src="${s.img}" class="w-full h-full object-cover">
-                        </div>
-                        <div class="text-slate-600 scale-90 whitespace-nowrap">${s.name}</div>
-                        <div class="text-gray-400 text-[8px] scale-90">${s.target}分</div>
-                    </div>
-                `;
-            }
-            container.innerHTML = html;
-        }
-
-        function fetchDatabase() {
-            showGlobalStatus(true, "正在連線至善之大地資料庫...");
-            fetch(`${SCRIPT_URL}?action=getAllUsers`)
-            .then(res => res.json())
-            .then(data => { processDatabaseData(data); })
-            .catch(err => {
-                const callbackName = "jsonpCallback_" + Date.now();
-                window[callbackName] = function(data) {
-                    processDatabaseData(data);
-                    document.getElementById(callbackName).remove();
-                    delete window[callbackName];
-                };
-                const script = document.createElement("script");
-                script.id = callbackName;
-                script.src = `${SCRIPT_URL}?action=getAllUsers&callback=${callbackName}`;
-                document.body.appendChild(script);
-            });
-        }
-
-        function processDatabaseData(data) {
-            let cleanData = data;
-            if (typeof data === "string") {
-                try {
-                    const jsonStr = data.substring(data.indexOf("(") + 1, data.lastIndexOf(")"));
-                    cleanData = JSON.parse(jsonStr);
-                } catch(e) {}
-            }
-            allUsersData = cleanData.users || cleanData || {};
-            showGlobalStatus(false);
+        // 🟢 修正點：加入隨清快取機制 (_nocache)，避免因為瀏覽器暫存拿不到最新的歷史紀錄
+        function fetchDatabase(callbackAfterFetch = null) {
+            showGlobalStatus(true, "正在同步雲端功德簿...");
             
-            let savedUser = localStorage.getItem("kindness_user");
-            if (savedUser) { savedUser = savedUser.trim().toLowerCase(); }
-            
-            if(savedUser && allUsersData[savedUser]) { loginAs(savedUser); } 
-            else { document.getElementById("authSection").classList.remove("hidden"); }
+            const callbackName = "jsonpCallback_" + Date.now();
+            window[callbackName] = function(data) {
+                if(data.result === "success") {
+                    allUsersData = data.users || {};
+                    showGlobalStatus(false);
+                    
+                    const savedUser = localStorage.getItem("kindness_user");
+                    if(savedUser && allUsersData[savedUser]) {
+                        currentUser = allUsersData[savedUser];
+                        renderUserUI();
+                        if(callbackAfterFetch) callbackAfterFetch();
+                        
+                        // 只有初次加載且不是在個人資料分頁時才顯示遊戲主頁
+                        if(currentActiveTab === "game") {
+                            document.getElementById("gameSection").classList.remove("hidden");
+                            document.getElementById("userStatus").classList.remove("hidden");
+                        }
+                    } else {
+                        document.getElementById("authSection").classList.remove("hidden");
+                    }
+                } else {
+                    showGlobalStatus(true, "⚠️ 載入資料庫失敗，請重試！", "❌");
+                }
+                document.getElementById(callbackName).remove();
+                delete window[callbackName];
+            };
+
+            const script = document.createElement("script");
+            script.id = callbackName;
+            script.src = `${SCRIPT_URL}?action=getAllUsers&callback=${callbackName}&_nocache=${Date.now()}`;
+            document.body.appendChild(script);
         }
 
         function handleAuth() {
@@ -353,177 +270,208 @@
             const pass = document.getElementById("password").value.trim();
             const nick = document.getElementById("nickname").value.trim();
             const gen = document.getElementById("gender").value;
+            const cls = document.getElementById("className").value.trim();
+            const ph = document.getElementById("phone").value.trim();
+            const em = document.getElementById("email").value.trim();
 
             if(!user || !pass) { alert("請填寫帳號與密碼！"); return; }
 
             if(allUsersData[user]) {
-                if(allUsersData[user].password === pass) { loginAs(user); } 
-                else { alert("密碼錯誤！"); }
-            } else {
-                if(!nick) { alert("新角色請填寫遊戲暱稱！"); return; }
-                showGlobalStatus(true, "正在為您建立新角色...");
-                
-                const newUserData = { username: user, password: pass, nickname: nick, gender: gen, className: "25春001班", email: "" };
-                const callbackName = "jsonpRegister_" + Date.now();
-                window[callbackName] = function() {
-                    alert("🎉 創角成功！歡迎來到善之大地！");
+                if(allUsersData[user].password === pass) {
                     localStorage.setItem("kindness_user", user);
-                    location.reload();
+                    document.getElementById("authSection").classList.add("hidden");
+                    fetchDatabase();
+                } else {
+                    alert("密碼錯誤！");
+                }
+            } else {
+                if(!nick || !cls || !ph || !em) { 
+                    alert("⚠️ 偵測到您是全新帳號！新創角色時，請務必完整填寫下方的「暱稱、班級、電話、Email」欄位！"); 
+                    return; 
+                }
+                showGlobalStatus(true, "正在建立角色並寫入資料庫...");
+                
+                const callbackName = "jsonpRegister_" + Date.now();
+                window[callbackName] = function(data) {
+                    if(data.result === "success") {
+                        alert("🎉 創角成功！歡迎來到善之大地！");
+                        localStorage.setItem("kindness_user", user);
+                        location.reload();
+                    } else {
+                        alert("註冊失敗：" + data.message);
+                        showGlobalStatus(false);
+                    }
+                    document.getElementById(callbackName).remove();
+                    delete window[callbackName];
                 };
+
+                const newUserData = { 
+                    username: user, 
+                    password: pass, 
+                    nickname: nick, 
+                    gender: gen, 
+                    className: cls, 
+                    phone: ph, 
+                    email: em 
+                };
+                
                 const script = document.createElement("script");
                 script.id = callbackName;
                 script.src = `${SCRIPT_URL}?action=register&callback=${callbackName}&data=${encodeURIComponent(JSON.stringify(newUserData))}`;
                 document.body.appendChild(script);
-                
-                fetch(`${SCRIPT_URL}?action=register&data=${encodeURIComponent(JSON.stringify(newUserData))}`, {mode:'no-cors'});
-                setTimeout(() => { if(!document.getElementById("authSection").classList.contains("hidden")){ window[callbackName]({}); } }, 2500);
             }
-        }
-
-        function loginAs(username) {
-            const cleanUsername = username.trim().toLowerCase();
-            currentUser = allUsersData[cleanUsername];
-            localStorage.setItem("kindness_user", cleanUsername);
-            document.getElementById("authSection").classList.add("hidden");
-            document.getElementById("gameSection").classList.remove("hidden");
-            renderUserUI();
         }
 
         function renderUserUI() {
-            document.getElementById("navNickname").innerText = currentUser.nickname || "小善同學";
-            
-            // 🌟 智慧判斷：如果瀏覽器有自訂頭像紀錄，優先載入自訂頭像；若無，再根據性別載入預設 👦/👧
-            const customAvatar = localStorage.getItem(`avatar_${currentUser.username}`);
-            if (customAvatar) {
-                document.getElementById("userAvatar").innerText = customAvatar;
+            document.getElementById("headerClassName").innerText = currentUser.className || "未設定班級";
+            document.getElementById("navNickname").innerText = `${currentUser.nickname} (${currentUser.gender})`;
+            document.getElementById("navScore").innerText = currentUser.score;
+
+            let stage = "🌱"; let levelName = "功德幼苗 (0分+)"; const score = currentUser.score;
+            if(score >= 150) { stage = "🏛️"; levelName = "終極庇護所・兜率內院 (150分+)"; }
+            else if(score >= 80) { stage = "🕌"; levelName = "天空大梵寺 (80分+)"; }
+            else if(score >= 50) { stage = "🏰"; levelName = "行善黃金古堡 (50分+)"; }
+            else if(score >= 20) { stage = "🏡"; levelName = "福報溫馨別墅 (20分+)"; }
+            else if(score >= 10)  { stage = "🌿"; levelName = "善意茂盛灌木 (10分+)"; }
+
+            document.getElementById("landStageVisual").innerText = stage;
+            document.getElementById("landLevelName").innerText = levelName;
+
+            const logContainer = document.getElementById("logContainer");
+            if(!currentUser.logs || currentUser.logs.length === 0) {
+                logContainer.innerHTML = `<p class="text-gray-400 text-center py-8">目前尚無行善紀錄。</p>`;
             } else {
-                document.getElementById("userAvatar").innerText = (currentUser.gender === "師姐") ? "👧" : "👦";
-            }
-
-            const score = parseInt(currentUser.score || 0);
-            document.getElementById("lblScore").innerText = score;
-            document.getElementById("bigLblScore").innerText = score;
-
-            let currentStage = STAGE_CONFIG[0];
-            let nextStage = STAGE_CONFIG[1];
-            
-            for (let i = 0; i < STAGE_CONFIG.length; i++) {
-                if (score >= STAGE_CONFIG[i].target) {
-                    currentStage = STAGE_CONFIG[i];
-                    nextStage = STAGE_CONFIG[i + 1] || null;
-                }
-            }
-
-            document.getElementById("lblLevel").innerText = currentStage.lv;
-            document.getElementById("lblLevelName").innerText = currentStage.name;
-            document.getElementById("bigLblLevel").innerText = currentStage.lv;
-            document.getElementById("bigLblLevelName").innerText = currentStage.name;
-            document.getElementById("bigLandImage").src = currentStage.img;
-
-            let needScore = 0; let pct = 100;
-            if (nextStage) {
-                needScore = nextStage.target - score;
-                const range = nextStage.target - currentStage.target;
-                const progress = score - currentStage.target;
-                pct = (progress / range) * 100;
-            }
-            document.getElementById("lblNextLevelScore").innerText = nextStage ? `還需要 ${needScore} 分` : "已達最高殿堂";
-            document.getElementById("scoreBar").style.width = `${pct}%`;
-            document.getElementById("bigScoreBar").style.width = `${pct}%`;
-
-            for(let i = 1; i <= 10; i++) {
-                const card = document.getElementById(`stageCard_${i}`);
-                if(card) {
-                    if(i <= currentStage.lv) {
-                        card.className = "min-w-[85px] lg:min-w-0 bg-green-50 p-1.5 rounded-xl border border-green-300 text-center text-[10px] font-bold ring-2 ring-green-500/10 snap-center opacity-100";
-                    } else {
-                        card.className = "min-w-[85px] lg:min-w-0 bg-slate-50 p-1.5 rounded-xl border border-slate-100 text-center text-[10px] font-bold opacity-30 snap-center";
-                    }
-                }
-            }
-
-            if(currentStage.lv === 11) {
-                document.getElementById("bigVisualCard").className = "bg-white rounded-2xl p-4 sm:p-6 shadow-xs relative flex flex-col md:flex-row items-center gap-6 overflow-hidden bg-gradient-to-b from-amber-100 via-white to-amber-50 min-h-[340px] border-2 border-amber-300 shadow-amber-100";
-            } else {
-                document.getElementById("bigVisualCard").className = "bg-white rounded-2xl p-4 sm:p-6 shadow-xs relative flex flex-col md:flex-row items-center gap-6 overflow-hidden bg-gradient-to-b from-sky-100 via-white to-slate-50 min-h-[340px]";
-            }
-
-            const gridLogContainer = document.getElementById("gridLogContainer");
-            const todaySummaryContainer = document.getElementById("todaySummaryContainer");
-            let logsHtml = ""; let todayHtml = ""; let todayScore = 0;
-            const now = new Date();
-            const todayPrefix = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
-            const rawLogs = currentUser.logs || [];
-
-            if(rawLogs.length === 0) {
-                gridLogContainer.innerHTML = `<p class="text-gray-400 text-center py-12">尚無善行紀錄。</p>`;
-                todaySummaryContainer.innerHTML = `<p class="text-gray-400 text-center py-2 text-xs">無紀錄</p>`;
-            } else {
-                for(let i = rawLogs.length - 1; i >= 0; i--) {
-                    const item = rawLogs[i];
-                    const isToday = item.time ? item.time.startsWith(todayPrefix) : false;
-                    const isMajor = item.type ? item.type.includes("10") : false;
-                    const scoreLabel = isMajor ? "+10" : "+1";
-
-                    logsHtml += `
-                        <div class="flex items-center justify-between p-2 border-b border-slate-50 hover:bg-slate-50 transition rounded-lg">
-                            <div class="flex items-center gap-2 max-w-[75%]">
-                                <i class="fa-solid fa-circle-check ${isMajor?'text-purple-500':'text-green-500'}"></i>
-                                <span class="text-slate-700 font-medium truncate">${item.desc}</span>
-                            </div>
-                            <span class="font-bold text-slate-700">${scoreLabel} 分</span>
+                let html = "";
+                // 由新到舊排序顯示
+                for(let i = currentUser.logs.length - 1; i >= 0; i--) {
+                    const item = currentUser.logs[i];
+                    html += `
+                        <div class="bg-slate-50 p-3 rounded-xl border-l-4 border-green-500 shadow-sm">
+                            <p class="text-xs text-gray-400 font-semibold mb-1">📅 ${item.time}</p>
+                            <p class="text-gray-700 font-medium"><span class="text-green-600 font-bold">[${item.type}]</span> ${item.desc}</p>
                         </div>
                     `;
-                    if(isToday) {
-                        todayScore += isMajor ? 10 : 1;
-                        todayHtml += `<div class="bg-slate-50 px-2 py-0.5 rounded truncate">📌 ${item.desc}</div>`;
-                    }
                 }
-                gridLogContainer.innerHTML = logsHtml;
-                todaySummaryContainer.innerHTML = todayHtml || `<p class="text-gray-400 text-center py-2 text-xs">無紀錄</p>`;
+                logContainer.innerHTML = html;
             }
-            document.getElementById("lblTodayScore").innerText = todayScore;
-
-            const leaderboardContainer = document.getElementById("leaderboardContainer");
-            const sortedUsers = Object.values(allUsersData).sort((a,b) => (b.score||0) - (a.score||0));
-            let lbHtml = "";
-            sortedUsers.slice(0, 5).forEach((u, index) => {
-                if(!u.nickname) return;
-                const isMe = u.username === currentUser.username;
-                lbHtml += `
-                    <div class="flex items-center justify-between p-2 rounded-xl text-xs ${isMe?'bg-amber-50 border border-amber-200':'bg-slate-50'}">
-                        <div class="flex items-center gap-2"><span>${index===0?'🥇':index===1?'🥈':index===2?'🥉':'👤'}</span><span class="font-bold text-slate-700">${u.nickname}</span></div>
-                        <span class="font-black text-slate-700">${u.score||0} 分</span>
-                    </div>
-                `;
-            });
-            leaderboardContainer.innerHTML = lbHtml || `<div class="text-gray-400 text-center py-8">暫無數據</div>`;
+            setupProfileInputs();
         }
 
+        function setupProfileInputs() {
+            if(!currentUser) return;
+            document.getElementById("profileUsername").value = currentUser.username || "";
+            document.getElementById("profileNickname").value = currentUser.nickname || "";
+            document.getElementById("profileGender").value = currentUser.gender || "師兄";
+            document.getElementById("profileClassName").value = currentUser.className || "";
+            document.getElementById("profilePhone").value = currentUser.phone || "";
+            document.getElementById("profileEmail").value = currentUser.email || "";
+        }
+
+        function switchTab(forceTab = null) {
+            const gameSec = document.getElementById("gameSection");
+            const profSec = document.getElementById("profileSection");
+            const btn = document.getElementById("btnSwitchTab");
+
+            let targetTab = forceTab;
+            if(!targetTab) {
+                targetTab = (currentActiveTab === "game") ? "profile" : "game";
+            }
+
+            if(targetTab === "profile") {
+                gameSec.classList.add("hidden");
+                profSec.classList.remove("hidden");
+                btn.innerText = "返回主頁面板";
+                btn.className = "bg-gray-500 hover:bg-gray-600 text-xs px-2 py-1 rounded transition";
+                currentActiveTab = "profile";
+            } else {
+                gameSec.classList.remove("hidden");
+                profSec.classList.add("hidden");
+                btn.innerText = "修改基本資料";
+                btn.className = "bg-blue-500 hover:bg-blue-600 text-xs px-2 py-1 rounded transition";
+                currentActiveTab = "game";
+            }
+        }
+
+        function submitUpdateProfile() {
+            const newNick = document.getElementById("profileNickname").value.trim();
+            const newGen = document.getElementById("profileGender").value;
+            const newCls = document.getElementById("profileClassName").value.trim();
+            const newPh = document.getElementById("profilePhone").value.trim();
+            const newEm = document.getElementById("profileEmail").value.trim();
+
+            if(!newNick || !newCls || !newPh || !newEm) { alert("所有資料欄位皆不能留空！"); return; }
+
+            showGlobalStatus(true, "正在同步更新雲端基本資料...");
+
+            const updatedProfile = {
+                username: currentUser.username,
+                nickname: newNick,
+                gender: newGen,
+                className: newCls,
+                phone: newPh,
+                email: newEm
+            };
+
+            const callbackName = "jsonpUpdateProfile_" + Date.now();
+            window[callbackName] = function(data) {
+                if(data.result === "success") {
+                    alert("✨ 個人基本資料修改成功！");
+                    fetchDatabase(function() {
+                        switchTab('game');
+                    });
+                } else {
+                    alert("更新失敗：" + data.message);
+                    showGlobalStatus(false);
+                }
+                document.getElementById(callbackName).remove();
+                delete window[callbackName];
+            };
+
+            const script = document.createElement("script");
+            script.id = callbackName;
+            script.src = `${SCRIPT_URL}?action=register&callback=${callbackName}&data=${encodeURIComponent(JSON.stringify(updatedProfile))}`;
+            document.body.appendChild(script);
+        }
+
+        // 🟢 修正點：送出紀錄後，除了在前端立即累加外，也強制透過 fetchDatabase 向雲端重新抓一次最正確、最齊全的歷史紀錄
         function submitKindness() {
             const desc = document.getElementById("kindnessDesc").value.trim();
-            if(!desc) { alert("請寫下您的具體善行描述！"); return; }
+            if(!desc) { alert("請寫下您的具體善行或心得描述！"); return; }
 
             const typeVal = document.querySelector('input[name="kindnessType"]:checked').value;
-            const scoreVal = typeVal === "daily" ? 1 : 10;
-            const typeText = typeVal === "daily" ? "每日善行 +1分" : "重大善舉 +10分";
+            
+            // 根據全新要求動態指派分數
+            let scoreVal = 1;
+            if (typeVal === "廣論班上課") scoreVal = 2;
+            else if (typeVal === "每日善行") scoreVal = 3;
+            else if (typeVal === "誦經") scoreVal = 3;
+            else if (typeVal === "聽音檔") scoreVal = 3;
+            else if (typeVal === "觀功") scoreVal = 5;
+            else if (typeVal === "念恩") scoreVal = 5;
+            else if (typeVal === "當義工") scoreVal = 8;
+            else if (typeVal === "參加法會") scoreVal = 8;
+
+            const typeText = `${typeVal} +${scoreVal}分`;
 
             const now = new Date();
             const timeString = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            const logItem = { time: timeString, type: typeText, desc: desc };
 
-            closeKindnessModal();
-            showGlobalStatus(true, "正在將功德打包上傳至雲端...");
+            const logItem = { time: timeString, type: typeText, desc: desc };
+            showGlobalStatus(true, "正在上傳功德至雲端...");
 
             const callbackName = "jsonpKindness_" + Date.now();
-            window[callbackName] = function() {
-                alert("✨ 善行已成功記錄！功德無量！");
-                currentUser.score = parseInt(currentUser.score || 0) + scoreVal;
-                if(!currentUser.logs) currentUser.logs = [];
-                currentUser.logs.push(logItem);
-                document.getElementById("kindnessDesc").value = "";
-                showGlobalStatus(false);
-                renderUserUI();
+            window[callbackName] = function(data) {
+                if(data.result === "success") {
+                    alert("✨ 善行已成功記錄！功德無量！");
+                    document.getElementById("kindnessDesc").value = "";
+                    // 關鍵修正：上傳完成後，立刻再次重新同步完整資料庫，保證資料永不漏接
+                    fetchDatabase();
+                } else {
+                    alert("紀錄失敗，請檢查網路連線！");
+                    showGlobalStatus(false);
+                }
+                document.getElementById(callbackName).remove();
+                delete window[callbackName];
             };
 
             const payload = { username: currentUser.username, scoreVal: scoreVal, logItem: logItem };
@@ -531,29 +479,19 @@
             script.id = callbackName;
             script.src = `${SCRIPT_URL}?action=addKindness&callback=${callbackName}&data=${encodeURIComponent(JSON.stringify(payload))}`;
             document.body.appendChild(script);
-
-            fetch(`${SCRIPT_URL}?action=addKindness&data=${encodeURIComponent(JSON.stringify(payload))}`, {mode:'no-cors'});
-            setTimeout(() => { if(!document.getElementById("globalStatus").classList.contains("hidden")){ window[callbackName]({}); } }, 2000);
         }
 
-        function openKindnessModal() { document.getElementById("kindnessModal").className = "fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"; }
-        function closeKindnessModal() { document.getElementById("kindnessModal").className = "fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4"; }
-        
-        // 🌟 更換大頭照彈窗開啟與關閉
-        function openAvatarModal() { document.getElementById("avatarModal").className = "fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"; }
-        function closeAvatarModal() { document.getElementById("avatarModal").className = "fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4"; }
-        
-        // 🌟 執行更換大頭照：儲存到本地記憶中並立即更新畫面
-        function changeAvatar(emojiChar) {
-            if(currentUser) {
-                localStorage.setItem(`avatar_${currentUser.username}`, emojiChar);
-                document.getElementById("userAvatar").innerText = emojiChar;
-                closeAvatarModal();
-            }
+        function updateScoreHint(val) { document.getElementById("btnScoreHint").innerText = `+${val}`; }
+        function showGlobalStatus(show, msg = "", iconHtml = null) {
+            const statusBox = document.getElementById("globalStatus");
+            const statusMsg = document.getElementById("statusMessage");
+            const statusIcon = document.getElementById("statusIcon");
+            if(show) {
+                statusBox.classList.remove("hidden"); statusMsg.innerText = msg;
+                if(iconHtml) statusIcon.innerHTML = `<span class="text-3xl">${iconHtml}</span>`;
+                else statusIcon.innerHTML = `<div class="loading-spinner"></div>`;
+            } else { statusBox.classList.add("hidden"); }
         }
-
-        function updateBtnScore(val) { document.getElementById("modalBtnScore").innerText = val; }
-        function showGlobalStatus(show, msg = "") { const box = document.getElementById("globalStatus"); document.getElementById("statusMessage").innerText = msg; if(show) box.classList.remove("hidden"); else box.classList.add("hidden"); }
         function logout() { localStorage.removeItem("kindness_user"); location.reload(); }
     </script>
 </body>
