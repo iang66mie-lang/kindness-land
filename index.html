@@ -20,10 +20,9 @@
 <body class="bg-slate-100 min-h-screen font-sans">
 
     <header class="bg-green-600 text-white p-4 shadow-md flex justify-between items-center">
-        <h1 class="text-xl font-bold flex items-center gap-2">🌱 善之大地 <span id="headerClassName" class="text-xs bg-green-700 px-2 py-1 rounded">載入中...</span></h1>
-        <div id="userStatus" class="hidden text-sm flex items-center gap-3">
+        <h1 class="text-xl font-bold flex items-center gap-2">🌱 善之大地 <span class="text-xs bg-green-700 px-2 py-1 rounded">25春001班</span></h1>
+        <div id="userStatus" class="hidden text-sm flex items-center gap-2">
             <span id="navNickname" class="font-semibold"></span> (得分: <span id="navScore" class="text-yellow-300 font-bold">0</span>)
-            <button id="btnSwitchTab" onclick="switchTab()" class="bg-blue-500 hover:bg-blue-600 text-xs px-2 py-1 rounded transition">修改基本資料</button>
             <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-xs px-2 py-1 rounded transition">登出</button>
         </div>
     </header>
@@ -34,134 +33,63 @@
             <p id="statusMessage" class="text-gray-600 font-medium">正在連線至善之大地資料庫...</p>
         </div>
 
-        <!-- 建立角色 / 登入區塊 -->
         <section id="authSection" class="hidden max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl my-8">
             <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">建立角色 / 登入</h2>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">使用者帳號 <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">使用者帳號</label>
                     <input type="text" id="username" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="請輸入英文或數字">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">密碼 <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">密碼</label>
                     <input type="password" id="password" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="請輸入密碼">
                 </div>
-                
                 <hr class="border-gray-200 my-4">
-                <p class="text-xs text-amber-500 font-semibold text-center">💡 初次登入將自動註冊，請務必完整填寫以下創角資料：</p>
-                
+                <p class="text-xs text-gray-400 text-center">💡 初次登入將自動以此資料創立新角色</p>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">遊戲暱稱</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">遊戲暱稱 (新創角必填)</label>
                     <input type="text" id="nickname" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="例如：隨喜功德小行者">
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">性別</label>
-                        <select id="gender" class="w-full px-3 py-2 border rounded-lg outline-none">
-                            <option value="師兄">師兄</option>
-                            <option value="師姐">師姐</option>
-                            <option value="其他">其他</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">班級名稱</label>
-                        <input type="text" id="className" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="例如：25春001班">
-                    </div>
-                </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">聯絡電話</label>
-                    <input type="tel" id="phone" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="例如：0912345678">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">性別</label>
+                    <select id="gender" class="w-full px-3 py-2 border rounded-lg outline-none">
+                        <option value="師兄">師兄</option>
+                        <option value="師姐">師姐</option>
+                        <option value="其他">其他</option>
+                    </select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">電子郵件 (Email)</label>
-                    <input type="email" id="email" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="例如：kindness@example.com">
-                </div>
-                
                 <button onclick="handleAuth()" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg shadow-md mt-2">
                     進入善之大地 🚀
                 </button>
             </div>
         </section>
 
-        <!-- 🏠 遊戲主要畫面區塊 -->
         <section id="gameSection" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 my-4">
             <div class="lg:col-span-2 space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-md text-center">
                     <h3 class="text-lg font-bold text-gray-700 mb-2">我的善意家園</h3>
-                    
-                    <!-- 🖼️ 完美找回：原版圖片自適應框架 -->
-                    <div class="flex justify-center my-4 h-32 items-center">
-                        <div id="landStageVisual" class="w-full h-full flex items-center justify-center">🌱</div>
-                    </div>
-                    
-                    <p class="text-sm text-gray-500">目前等級：<span id="landLevelName" class="font-bold text-green-600">功德幼苗</span></p>
+                    <div id="landStageVisual" class="text-6xl my-4">🌱</div>
+                    <p class="text-sm text-gray-500">目前等級：<span id="landLevelName" class="font-bold text-green-600">功功德幼苗</span></p>
                 </div>
 
-                <!-- ✍️ 八大積分選項區塊 -->
                 <div class="bg-white p-6 rounded-2xl shadow-md">
-                    <h3 class="text-lg font-bold text-gray-700 mb-4">✍️ 每日造集資糧功德回報</h3>
-                    
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 text-center">
-                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
-                            <input type="radio" name="kindnessType" value="廣論班上課" checked onclick="updateScoreHint(2)" class="absolute top-2 left-2">
-                            <div class="text-2xl mb-1">📖</div>
-                            <p class="font-medium text-xs">廣論班上課</p>
-                            <p class="text-[10px] text-gray-400 font-bold">+2 分</p>
+                    <h3 class="text-lg font-bold text-gray-700 mb-4">✍️ 每日行善紀錄回報</h3>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <label class="flex items-center gap-2 p-3 border rounded-xl hover:bg-green-50 cursor-pointer">
+                            <input type="radio" name="kindnessType" value="daily" checked onclick="updateScoreHint(1)">
+                            <div><p class="font-medium text-sm">每日善行</p><p class="text-xs text-gray-400">+1 分</p></div>
                         </label>
-                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
-                            <input type="radio" name="kindnessType" value="每日善行" onclick="updateScoreHint(3)" class="absolute top-2 left-2">
-                            <div class="text-2xl mb-1">☀️</div>
-                            <p class="font-medium text-xs">每日善行</p>
-                            <p class="text-[10px] text-gray-400 font-bold">+3 分</p>
-                        </label>
-                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
-                            <input type="radio" name="kindnessType" value="誦經" onclick="updateScoreHint(3)" class="absolute top-2 left-2">
-                            <div class="text-2xl mb-1">🙏</div>
-                            <p class="font-medium text-xs">誦經</p>
-                            <p class="text-[10px] text-gray-400 font-bold">+3 分</p>
-                        </label>
-                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
-                            <input type="radio" name="kindnessType" value="聽音檔" onclick="updateScoreHint(3)" class="absolute top-2 left-2">
-                            <div class="text-2xl mb-1">🎧</div>
-                            <p class="font-medium text-xs">聽音檔</p>
-                            <p class="text-[10px] text-gray-400 font-bold">+3 分</p>
+                        <label class="flex items-center gap-2 p-3 border rounded-xl hover:bg-green-50 cursor-pointer">
+                            <input type="radio" name="kindnessType" value="major" onclick="updateScoreHint(5)">
+                            <div><p class="font-medium text-sm">重大善舉</p><p class="text-xs text-gray-400">+5 分</p></div>
                         </label>
                     </div>
-
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 text-center">
-                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
-                            <input type="radio" name="kindnessType" value="觀功" onclick="updateScoreHint(5)" class="absolute top-2 left-2">
-                            <div class="text-2xl mb-1">🔍</div>
-                            <p class="font-medium text-xs">觀功</p>
-                            <p class="text-[10px] text-gray-400 font-bold">+5 分</p>
-                        </label>
-                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
-                            <input type="radio" name="kindnessType" value="念恩" onclick="updateScoreHint(5)" class="absolute top-2 left-2">
-                            <div class="text-2xl mb-1">❤️</div>
-                            <p class="font-medium text-xs">念恩</p>
-                            <p class="text-[10px] text-gray-400 font-bold">+5 分</p>
-                        </label>
-                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
-                            <input type="radio" name="kindnessType" value="當義工" onclick="updateScoreHint(8)" class="absolute top-2 left-2">
-                            <div class="text-2xl mb-1">🧡</div>
-                            <p class="font-medium text-xs">當義工</p>
-                            <p class="text-[10px] text-gray-400 font-bold">+8 分</p>
-                        </label>
-                        <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
-                            <input type="radio" name="kindnessType" value="參加法會" onclick="updateScoreHint(8)" class="absolute top-2 left-2">
-                            <div class="text-2xl mb-1">📿</div>
-                            <p class="font-medium text-xs">參加法會</p>
-                            <p class="text-[10px] text-gray-400 font-bold">+8 分</p>
-                        </label>
-                    </div>
-
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-600 mb-1">功德迴向與具體描述</label>
-                        <textarea id="kindnessDesc" rows="3" class="w-full px-3 py-2 border rounded-lg outline-none text-sm" placeholder="填寫今天造集了什麼善業..."></textarea>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">善行具體描述</label>
+                        <textarea id="kindnessDesc" rows="3" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="填寫做了什麼好事..."></textarea>
                     </div>
-                    <!-- 🛡️ 加上防重複點擊的 id 鎖定 -->
-                    <button id="btnSubmitKindness" onclick="submitKindness()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md transition">
-                        送出善行，灌溉大地 ✨ (<span id="btnScoreHint">+2</span>分)
+                    <button onclick="submitKindness()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md">
+                        送出善行，灌溉大地 ✨ (<span id="btnScoreHint">+1</span>分)
                     </button>
                 </div>
             </div>
@@ -173,131 +101,39 @@
                 </div>
             </div>
         </section>
-
-        <!-- 🏆 完美找回：排行榜與所有人善意家園世界資訊區塊 -->
-        <section id="leaderboardSection" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
-            <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-md">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">🌍 善意家園世界</h3>
-                <div id="worldContainer" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <!-- 這裡會由 JavaScript 自動渲染所有同學的大地狀態與圖片 -->
-                </div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-md">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">👑 功德資糧排行榜</h3>
-                <div id="leaderboardContainer" class="space-y-3">
-                    <!-- 這裡會由 JavaScript 自動渲染前幾名排行 -->
-                </div>
-            </div>
-        </section>
-
-        <!-- 👤 個人資料修改區塊 -->
-        <section id="profileSection" class="hidden max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl my-4">
-            <h3 class="text-xl font-bold text-gray-800 mb-2">👤 行者基本資料</h3>
-            <p class="text-xs text-gray-400 mb-6">您可以隨時檢視或修改您的個人資料，系統會自動同步回傳雲端。</p>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-400 mb-1">使用者帳號 (無法修改)</label>
-                    <input type="text" id="profileUsername" disabled class="w-full px-3 py-2 bg-slate-50 border rounded-lg text-gray-400 outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">遊戲暱稱</label>
-                    <input type="text" id="profileNickname" class="w-full px-3 py-2 border rounded-lg outline-none">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">性別</label>
-                        <select id="profileGender" class="w-full px-3 py-2 border rounded-lg outline-none">
-                            <option value="師兄">師兄</option>
-                            <option value="師姐">師姐</option>
-                            <option value="其他">其他</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">班級名稱</label>
-                        <input type="text" id="profileClassName" class="w-full px-3 py-2 border rounded-lg outline-none">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">聯絡電話</label>
-                    <input type="tel" id="profilePhone" class="w-full px-3 py-2 border rounded-lg outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">電子郵件 (Email)</label>
-                    <input type="email" id="profileEmail" class="w-full px-3 py-2 border rounded-lg outline-none">
-                </div>
-                
-                <div class="pt-2 flex gap-3">
-                    <button onclick="switchTab('game')" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition">
-                        返回首頁
-                    </button>
-                    <button onclick="submitUpdateProfile()" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 rounded-lg shadow-md transition">
-                        儲存修改 💾
-                    </button>
-                </div>
-            </div>
-        </section>
     </main>
 
     <script>
+        // ==========================================
+        // ⚠️ 關鍵設定：請把這裡換成你最新的 Google GAS 網址！
+        // ==========================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzBeHqFPnUEiRbkIF2U8j4NVWQ96nUDGLDGyFNicaR3AC54DH_EBzI8sKPddz8vulgJyQ/exec";
         
         let allUsersData = {};
         let currentUser = null;
-        let currentActiveTab = "game";
-        let isSubmitting = false; // 🔒 防手機重複點擊發送鎖
-
-        // 🖼️ 完美找回：原版圖片等級對應表
-        const STAGE_ASSETS = {
-            0:   { name: "功德幼苗", emoji: "🌱", img: "https://images.unsplash.com/photo-1516253593875-bd7ba052fbc5?auto=format&fit=crop&w=300&q=80" },
-            10:  { name: "善意茂盛灌木", emoji: "🌿", img: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=300&q=80" },
-            20:  { name: "福報溫馨別墅", emoji: "🏡", img: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=300&q=80" },
-            50:  { name: "行善黃金古堡", emoji: "🏰", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=300&q=80" },
-            80:  { name: "天空大梵寺", emoji: "🕌", img: "https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=300&q=80" },
-            150: { name: "終極庇護所・兜率內院", emoji: "🏛️", img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=300&q=80" }
-        };
-
-        function getStageInfo(score) {
-            let activeStage = STAGE_ASSETS[0];
-            const thresholds = Object.keys(STAGE_ASSETS).map(Number).sort((a,b)=>a-b);
-            for(let t of thresholds) {
-                if(score >= t) { activeStage = STAGE_ASSETS[t]; }
-            }
-            return activeStage;
-        }
 
         window.onload = function() {
             fetchDatabase();
         };
 
-        function fetchDatabase(callbackAfterFetch = null) {
-            showGlobalStatus(true, "正在同步雲端功德物語...");
+        // 🌟 核心修改：改用 JSONP 方式讀取資料，完美繞過所有 CORS 阻擋政策！
+        function fetchDatabase() {
+            showGlobalStatus(true, "正在連線至善之大地資料庫...");
             
+            // 建立一個動態的 script 標籤向 Google 要資料
             const callbackName = "jsonpCallback_" + Date.now();
             window[callbackName] = function(data) {
                 if(data.result === "success") {
                     allUsersData = data.users || {};
                     showGlobalStatus(false);
-                    
                     const savedUser = localStorage.getItem("kindness_user");
                     if(savedUser && allUsersData[savedUser]) {
-                        currentUser = allUsersData[savedUser];
-                        renderUserUI();
-                        renderLeaderboardAndWorld(); // 🌍 同步渲染大世界與排行榜
-                        
-                        if(callbackAfterFetch) callbackAfterFetch();
-                        
-                        if(currentActiveTab === "game") {
-                            document.getElementById("gameSection").classList.remove("hidden");
-                            document.getElementById("leaderboardSection").classList.remove("hidden"); // 顯示世界區塊
-                            document.getElementById("userStatus").classList.remove("hidden");
-                        }
+                        loginAs(savedUser);
                     } else {
                         document.getElementById("authSection").classList.remove("hidden");
-                        document.getElementById("leaderboardSection").classList.add("hidden");
                     }
                 } else {
-                    showGlobalStatus(true, "⚠️ 載入資料庫失敗，請重試！", "❌");
+                    showGlobalStatus(true, "⚠️ 載入資料庫失敗！", "❌");
                 }
                 document.getElementById(callbackName).remove();
                 delete window[callbackName];
@@ -305,7 +141,7 @@
 
             const script = document.createElement("script");
             script.id = callbackName;
-            script.src = `${SCRIPT_URL}?action=getAllUsers&callback=${callbackName}&_nocache=${Date.now()}`;
+            script.src = `${SCRIPT_URL}?action=getAllUsers&callback=${callbackName}`;
             document.body.appendChild(script);
         }
 
@@ -314,27 +150,20 @@
             const pass = document.getElementById("password").value.trim();
             const nick = document.getElementById("nickname").value.trim();
             const gen = document.getElementById("gender").value;
-            const cls = document.getElementById("className").value.trim();
-            const ph = document.getElementById("phone").value.trim();
-            const em = document.getElementById("email").value.trim();
 
             if(!user || !pass) { alert("請填寫帳號與密碼！"); return; }
 
             if(allUsersData[user]) {
                 if(allUsersData[user].password === pass) {
-                    localStorage.setItem("kindness_user", user);
-                    document.getElementById("authSection").classList.add("hidden");
-                    fetchDatabase();
+                    loginAs(user);
                 } else {
                     alert("密碼錯誤！");
                 }
             } else {
-                if(!nick || !cls || !ph || !em) { 
-                    alert("⚠️ 偵測到您是全新帳號！新創角色時，請務必完整填寫下方的「暱稱、班級、電話、Email」欄位！"); 
-                    return; 
-                }
-                showGlobalStatus(true, "正在建立角色並寫入資料庫...");
+                if(!nick) { alert("新角色請填寫遊戲暱稱！"); return; }
+                showGlobalStatus(true, "正在建立角色...");
                 
+                // 註冊同樣改用強效 JSONP 穿透法
                 const callbackName = "jsonpRegister_" + Date.now();
                 window[callbackName] = function(data) {
                     if(data.result === "success") {
@@ -349,7 +178,7 @@
                     delete window[callbackName];
                 };
 
-                const newUserData = { username: user, password: pass, nickname: nick, gender: gen, className: cls, phone: ph, email: em };
+                const newUserData = { username: user, password: pass, nickname: nick, gender: gen, className: "25春001班", email: "" };
                 const script = document.createElement("script");
                 script.id = callbackName;
                 script.src = `${SCRIPT_URL}?action=register&callback=${callbackName}&data=${encodeURIComponent(JSON.stringify(newUserData))}`;
@@ -357,15 +186,28 @@
             }
         }
 
+        function loginAs(username) {
+            currentUser = allUsersData[username];
+            localStorage.setItem("kindness_user", username);
+            document.getElementById("authSection").classList.add("hidden");
+            document.getElementById("gameSection").classList.remove("hidden");
+            document.getElementById("userStatus").classList.remove("hidden");
+            renderUserUI();
+        }
+
         function renderUserUI() {
-            document.getElementById("headerClassName").innerText = currentUser.className || "未設定班級";
             document.getElementById("navNickname").innerText = `${currentUser.nickname} (${currentUser.gender})`;
             document.getElementById("navScore").innerText = currentUser.score;
 
-            // 🖼️ 完美找回：動態切換原版美圖
-            const stage = getStageInfo(currentUser.score);
-            document.getElementById("landStageVisual").innerHTML = `<img src="${stage.img}" alt="${stage.name}" class="h-32 w-full object-cover rounded-xl shadow-inner">`;
-            document.getElementById("landLevelName").innerText = `${stage.name} (${currentUser.score}分)`;
+            let stage = "🌱"; let levelName = "功德幼苗 (0分+)"; const score = currentUser.score;
+            if(score >= 50) { stage = "🏛️"; levelName = "終極庇護所・兜率內院 (50分+)"; }
+            else if(score >= 30) { stage = "🕌"; levelName = "天空大梵寺 (30分+)"; }
+            else if(score >= 20) { stage = "🏰"; levelName = "行善黃金古堡 (20分+)"; }
+            else if(score >= 10) { stage = "🏡"; levelName = "福報溫馨別墅 (10分+)"; }
+            else if(score >= 5)  { stage = "🌿"; levelName = "善意茂盛灌木 (5分+)"; }
+
+            document.getElementById("landStageVisual").innerText = stage;
+            document.getElementById("landLevelName").innerText = levelName;
 
             const logContainer = document.getElementById("logContainer");
             if(!currentUser.logs || currentUser.logs.length === 0) {
@@ -383,161 +225,37 @@
                 }
                 logContainer.innerHTML = html;
             }
-            setupProfileInputs();
         }
 
-        // 🌍 完美找回：動態繪製大世界跟排行榜資訊
-        function renderLeaderboardAndWorld() {
-            const worldContainer = document.getElementById("worldContainer");
-            const leaderboardContainer = document.getElementById("leaderboardContainer");
-            
-            let worldHtml = "";
-            let userList = [];
-
-            for(let username in allUsersData) {
-                const u = allUsersData[username];
-                userList.push(u);
-                const stage = getStageInfo(u.score);
-                
-                worldHtml += `
-                    <div class="bg-slate-50 p-3 rounded-xl shadow-sm text-center border border-gray-100">
-                        <img src="${stage.img}" class="w-full h-16 object-cover rounded-md mb-2">
-                        <p class="font-bold text-xs text-gray-700 truncate">${u.nickname}</p>
-                        <p class="text-[10px] text-gray-400 truncate">${u.className || '小行者'}</p>
-                        <div class="mt-1"><span class="bg-green-100 text-green-700 font-bold text-[10px] px-1.5 py-0.5 rounded-full">${u.score} 分</span></div>
-                    </div>
-                `;
-            }
-            worldContainer.innerHTML = worldHtml;
-
-            // 排行榜依分數由大到小排序
-            userList.sort((a, b) => (b.score || 0) - (a.score || 0));
-            let rankHtml = "";
-            userList.slice(0, 10).forEach((u, index) => {
-                let medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `第 ${index + 1} 名`;
-                rankHtml += `
-                    <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl text-xs font-medium">
-                        <span class="text-gray-600 font-bold">${medal} ${u.nickname}</span>
-                        <span class="text-blue-600 font-bold">${u.score} 分</span>
-                    </div>
-                `;
-            });
-            leaderboardContainer.innerHTML = rankHtml;
-        }
-
-        function setupProfileInputs() {
-            if(!currentUser) return;
-            document.getElementById("profileUsername").value = currentUser.username || "";
-            document.getElementById("profileNickname").value = currentUser.nickname || "";
-            document.getElementById("profileGender").value = currentUser.gender || "師兄";
-            document.getElementById("profileClassName").value = currentUser.className || "";
-            document.getElementById("profilePhone").value = currentUser.phone || "";
-            document.getElementById("profileEmail").value = currentUser.email || "";
-        }
-
-        function switchTab(forceTab = null) {
-            const gameSec = document.getElementById("gameSection");
-            const leadSec = document.getElementById("leaderboardSection");
-            const profSec = document.getElementById("profileSection");
-            const btn = document.getElementById("btnSwitchTab");
-
-            let targetTab = forceTab ? forceTab : (currentActiveTab === "game" ? "profile" : "game");
-
-            if(targetTab === "profile") {
-                gameSec.classList.add("hidden");
-                leadSec.classList.add("hidden");
-                profSec.classList.remove("hidden");
-                btn.innerText = "返回主頁面板";
-                btn.className = "bg-gray-500 hover:bg-gray-600 text-xs px-2 py-1 rounded transition";
-                currentActiveTab = "profile";
-            } else {
-                gameSec.classList.remove("hidden");
-                leadSec.classList.remove("hidden");
-                profSec.classList.add("hidden");
-                btn.innerText = "修改基本資料";
-                btn.className = "bg-blue-500 hover:bg-blue-600 text-xs px-2 py-1 rounded transition";
-                currentActiveTab = "game";
-            }
-        }
-
-        function submitUpdateProfile() {
-            const newNick = document.getElementById("profileNickname").value.trim();
-            const newGen = document.getElementById("profileGender").value;
-            const newCls = document.getElementById("profileClassName").value.trim();
-            const newPh = document.getElementById("profilePhone").value.trim();
-            const newEm = document.getElementById("profileEmail").value.trim();
-
-            if(!newNick || !newCls || !newPh || !newEm) { alert("所有資料欄位皆不能留空！"); return; }
-
-            showGlobalStatus(true, "正在同步更新雲端基本資料...");
-
-            const updatedProfile = { username: currentUser.username, nickname: newNick, gender: newGen, className: newCls, phone: newPh, email: newEm };
-            const callbackName = "jsonpUpdateProfile_" + Date.now();
-            window[callbackName] = function(data) {
-                if(data.result === "success") {
-                    alert("✨ 個人基本資料修改成功！");
-                    fetchDatabase(function() { switchTab('game'); });
-                } else {
-                    alert("更新失敗：" + data.message);
-                    showGlobalStatus(false);
-                }
-                document.getElementById(callbackName).remove();
-                delete window[callbackName];
-            };
-
-            const script = document.createElement("script");
-            script.id = callbackName;
-            script.src = `${SCRIPT_URL}?action=register&callback=${callbackName}&data=${encodeURIComponent(JSON.stringify(updatedProfile))}`;
-            document.body.appendChild(script);
-        }
-
-        // 🛡️ 關鍵修正：修復手機端重複彈出 Alert 兩次的問題
         function submitKindness() {
-            if(isSubmitting) return; // 如果正在處理中，直接攔截阻斷，防止二次點擊
-
             const desc = document.getElementById("kindnessDesc").value.trim();
-            if(!desc) { alert("請寫下您的具體善行或心得描述！"); return; }
-
-            // 進入鎖定狀態，並禁用按鈕
-            isSubmitting = true;
-            const btnSubmit = document.getElementById("btnSubmitKindness");
-            btnSubmit.disabled = true;
-            btnSubmit.innerText = "正在傳送中...";
+            if(!desc) { alert("請寫下您的具體善行描述！"); return; }
 
             const typeVal = document.querySelector('input[name="kindnessType"]:checked').value;
-            let scoreVal = 1;
-            if (typeVal === "廣論班上課") scoreVal = 2;
-            else if (typeVal === "每日善行") scoreVal = 3;
-            else if (typeVal === "誦經") scoreVal = 3;
-            else if (typeVal === "聽音檔") scoreVal = 3;
-            else if (typeVal === "觀功") scoreVal = 5;
-            else if (typeVal === "念恩") scoreVal = 5;
-            else if (typeVal === "當義工") scoreVal = 8;
-            else if (typeVal === "參加法會") scoreVal = 8;
+            const scoreVal = typeVal === "daily" ? 1 : 5;
+            const typeText = typeVal === "daily" ? "每日善行 +1分" : "重大善舉 +5分";
 
-            const typeText = `${typeVal} +${scoreVal}分`;
             const now = new Date();
             const timeString = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
             const logItem = { time: timeString, type: typeText, desc: desc };
-            
             showGlobalStatus(true, "正在上傳功德至雲端...");
 
+            // 寫入同樣改用強效 JSONP 穿透法
             const callbackName = "jsonpKindness_" + Date.now();
             window[callbackName] = function(data) {
                 if(data.result === "success") {
                     alert("✨ 善行已成功記錄！功德無量！");
+                    currentUser.score += scoreVal;
+                    if(!currentUser.logs) currentUser.logs = [];
+                    currentUser.logs.push(logItem);
                     document.getElementById("kindnessDesc").value = "";
-                    fetchDatabase();
+                    showGlobalStatus(false);
+                    renderUserUI();
                 } else {
-                    alert("紀錄失敗，請檢查網路連線！");
+                    alert("紀錄失敗！");
                     showGlobalStatus(false);
                 }
-                
-                // 解鎖狀態
-                isSubmitting = false;
-                btnSubmit.disabled = false;
-                btnSubmit.innerText = "送出善行，灌溉大地 ✨";
-
                 document.getElementById(callbackName).remove();
                 delete window[callbackName];
             };
@@ -550,6 +268,7 @@
         }
 
         function updateScoreHint(val) { document.getElementById("btnScoreHint").innerText = `+${val}`; }
+
         function showGlobalStatus(show, msg = "", iconHtml = null) {
             const statusBox = document.getElementById("globalStatus");
             const statusMsg = document.getElementById("statusMessage");
@@ -560,6 +279,7 @@
                 else statusIcon.innerHTML = `<div class="loading-spinner"></div>`;
             } else { statusBox.classList.add("hidden"); }
         }
+
         function logout() { localStorage.removeItem("kindness_user"); location.reload(); }
     </script>
 </body>
