@@ -69,6 +69,7 @@
                 <div class="bg-white p-6 rounded-2xl shadow-md text-center">
                     <h3 class="text-lg font-bold text-gray-700 mb-2">我的善意家園</h3>
                     
+                    <!-- 🖼️ 圖片顯示區塊 -->
                     <div class="flex justify-center my-4 h-44 items-center">
                         <div id="landStageVisual" class="w-full h-full flex items-center justify-center"></div>
                     </div>
@@ -76,8 +77,9 @@
                     <p class="text-sm text-gray-500">目前等級：<span id="landLevelName" class="font-bold text-green-600">功德萌芽幼苗</span></p>
                 </div>
 
+                <!-- ✍️ 8 大積分項目區塊 -->
                 <div class="bg-white p-6 rounded-2xl shadow-md">
-                    <h3 class="text-lg font-bold text-gray-700 mb-4">✍️ 每日造集資糧功功德回報</h3>
+                    <h3 class="text-lg font-bold text-gray-700 mb-4">✍️ 每日造集資糧功德回報</h3>
                     
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 text-center">
                         <label class="p-2 border rounded-xl hover:bg-green-50 cursor-pointer block relative">
@@ -151,9 +153,10 @@
             </div>
         </section>
 
+        <!-- 🌍 修正：確保這個排行榜與鄰居世界區塊會被正確顯示出來 -->
         <section id="leaderboardSection" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
             <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-md">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">🌍 善意家園世界</h3>
+                <h3 class="text-xl font-bold text-gray-800 mb-4">🌍 善意家園世界（我的鄰居們）</h3>
                 <div id="worldContainer" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-md">
@@ -168,6 +171,254 @@
         
         let allUsersData = {};
         let currentUser = null;
-        let isSubmitting = false; // 🔒 手機防重複點擊發送鎖
+        let isSubmitting = false; 
 
-        //
+        // 🖼️ 100~500 分級距配置表（最高 9999 分）
+        const STAGE_CONFIG = [
+            { minScore: 3000, name: "無上圓滿佛淨土", file: "stage10.png" },
+            { minScore: 2000, name: "極樂金光明寶園", file: "stage9.png" },
+            { minScore: 1500, name: "兜率內院大庇護所", file: "stage8.png" },
+            { minScore: 1100, name: "天空摩尼梵宇寺", file: "stage7.png" },
+            { minScore: 800,  name: "福德善意黃金寶堡", file: "stage6.png" },
+            { minScore: 550,  name: "華麗福報摩登莊園", file: "stage5.png" },
+            { minScore: 350,  name: "慈悲福慧豐收家園", file: "stage4.png" },
+            { minScore: 200,  name: "隨喜善念茂盛灌木", file: "stage3.png" },
+            { minScore: 100,  name: "菩提清淨小綠植株", file: "stage2.png" },
+            { minScore: 0,    name: "功德萌芽初始幼苗", file: "stage1.png" }
+        ];
+
+        function getStageInfo(score) {
+            const currentScore = score > 9999 ? 9999 : score;
+            for (let stage of STAGE_CONFIG) {
+                if (currentScore >= stage.minScore) return stage;
+            }
+            return STAGE_CONFIG[STAGE_CONFIG.length - 1];
+        }
+
+        window.onload = function() {
+            fetchDatabase();
+        };
+
+        function fetchDatabase() {
+            showGlobalStatus(true, "正在連線至善之大地資料庫...");
+            
+            const callbackName = "jsonpCallback_" + Date.now();
+            window[callbackName] = function(data) {
+                if(data.result === "success") {
+                    allUsersData = data.users || {};
+                    showGlobalStatus(false);
+                    const savedUser = localStorage.getItem("kindness_user");
+                    if(savedUser && allUsersData[savedUser]) {
+                        loginAs(savedUser);
+                    } else {
+                        document.getElementById("authSection").classList.remove("hidden");
+                        document.getElementById("leaderboardSection").classList.add("hidden");
+                    }
+                } else {
+                    showGlobalStatus(true, "⚠️ 載入資料庫失敗！", "❌");
+                }
+                document.getElementById(callbackName).remove();
+                delete window[callbackName];
+            };
+
+            const script = document.createElement("script");
+            script.id = callbackName;
+            script.src = `${SCRIPT_URL}?action=getAllUsers&callback=${callbackName}&_nocache=${Date.now()}`;
+            document.body.appendChild(script);
+        }
+
+        function handleAuth() {
+            const user = document.getElementById("username").value.trim().toLowerCase();
+            const pass = document.getElementById("password").value.trim();
+            const nick = document.getElementById("nickname").value.trim();
+            const gen = document.getElementById("gender").value;
+
+            if(!user || !pass) { alert("請填寫帳號與密碼！"); return; }
+
+            if(allUsersData[user]) {
+                if(allUsersData[user].password === pass) {
+                    loginAs(user);
+                } else {
+                    alert("密碼錯誤！");
+                }
+            } else {
+                if(!nick) { alert("新角色請填寫遊戲暱稱！"); return; }
+                showGlobalStatus(true, "正在建立角色...");
+                
+                const callbackName = "jsonpRegister_" + Date.now();
+                window[callbackName] = function(data) {
+                    if(data.result === "success") {
+                        alert("🎉 創角成功！歡迎來到善之大地！");
+                        localStorage.setItem("kindness_user", user);
+                        location.reload();
+                    } else {
+                        alert("註冊失敗：" + data.message);
+                        showGlobalStatus(false);
+                    }
+                    document.getElementById(callbackName).remove();
+                    delete window[callbackName];
+                };
+
+                const newUserData = { username: user, password: pass, nickname: nick, gender: gen, className: "25春001班", email: "" };
+                const script = document.createElement("script");
+                script.id = callbackName;
+                script.src = `${SCRIPT_URL}?action=register&callback=${callbackName}&data=${encodeURIComponent(JSON.stringify(newUserData))}`;
+                document.body.appendChild(script);
+            }
+        }
+
+        function loginAs(username) {
+            currentUser = allUsersData[username];
+            localStorage.setItem("kindness_user", username);
+            document.getElementById("authSection").classList.add("hidden");
+            document.getElementById("gameSection").classList.remove("hidden");
+            document.getElementById("userStatus").classList.remove("hidden");
+            
+            // ✨ 核心修復點：不管是不是自動登入，都強制呼叫並把排行榜、鄰居世界顯示出來！
+            document.getElementById("leaderboardSection").classList.remove("hidden");
+            renderLeaderboardAndWorld(); 
+            renderUserUI();
+        }
+
+        function renderUserUI() {
+            document.getElementById("navNickname").innerText = `${currentUser.nickname} (${currentUser.gender})`;
+            const displayScore = currentUser.score > 9999 ? 9999 : currentUser.score;
+            document.getElementById("navScore").innerText = displayScore;
+
+            const stage = getStageInfo(currentUser.score);
+            document.getElementById("landStageVisual").innerHTML = `<img src="images/${stage.file}" alt="${stage.name}" class="h-44 w-auto object-contain mx-auto rounded-xl drop-shadow-md">`;
+            document.getElementById("landLevelName").innerText = `${stage.name} (${displayScore} 分)`;
+
+            const logContainer = document.getElementById("logContainer");
+            if(!currentUser.logs || currentUser.logs.length === 0) {
+                logContainer.innerHTML = `<p class="text-gray-400 text-center py-8">目前尚無行善紀錄。</p>`;
+            } else {
+                let html = "";
+                for(let i = currentUser.logs.length - 1; i >= 0; i--) {
+                    const item = currentUser.logs[i];
+                    html += `
+                        <div class="bg-slate-50 p-3 rounded-xl border-l-4 border-green-500 shadow-sm">
+                            <p class="text-xs text-gray-400 font-semibold mb-1">📅 ${item.time}</p>
+                            <p class="text-gray-700 font-medium"><span class="text-green-600 font-bold">[${item.type}]</span> ${item.desc}</p>
+                        </div>
+                    `;
+                }
+                logContainer.innerHTML = html;
+            }
+        }
+
+        function renderLeaderboardAndWorld() {
+            const worldContainer = document.getElementById("worldContainer");
+            const leaderboardContainer = document.getElementById("leaderboardContainer");
+            
+            let worldHtml = ""; 
+            let userList = [];
+            
+            for(let username in allUsersData) {
+                const u = allUsersData[username]; 
+                userList.push(u);
+                const stage = getStageInfo(u.score);
+                const uScore = u.score > 9999 ? 9999 : u.score;
+                
+                worldHtml += `
+                    <div class="bg-slate-50 p-3 rounded-xl text-center border text-xs border-gray-100 shadow-sm flex flex-col justify-between items-center">
+                        <img src="images/${stage.file}" class="w-16 h-16 object-contain mb-1 rounded-md drop-shadow-sm">
+                        <p class="font-bold truncate w-full text-gray-700">${u.nickname}</p>
+                        <div class="mt-1"><span class="bg-green-100 text-green-700 font-bold text-[10px] px-1.5 py-0.5 rounded-full">${uScore}分</span></div>
+                    </div>`;
+            }
+            worldContainer.innerHTML = worldHtml;
+
+            userList.sort((a, b) => (b.score || 0) - (a.score || 0));
+            let rankHtml = "";
+            userList.slice(0, 10).forEach((u, idx) => {
+                const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `第 ${idx+1} 名`;
+                const uScore = u.score > 9999 ? 9999 : u.score;
+                rankHtml += `
+                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded-xl text-xs font-medium">
+                        <span class="text-gray-600 font-bold">${medal} ${u.nickname}</span>
+                        <span class="text-blue-600 font-bold">${uScore} 分</span>
+                    </div>`;
+            });
+            leaderboardContainer.innerHTML = rankHtml;
+        }
+
+        function submitKindness() {
+            if(isSubmitting) return; 
+
+            const desc = document.getElementById("kindnessDesc").value.trim();
+            if(!desc) { alert("請寫下您的具體善行描述！"); return; }
+
+            isSubmitting = true;
+            const btnSubmit = document.getElementById("btnSubmitKindness");
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "正在傳送中...";
+
+            const typeVal = document.querySelector('input[name="kindnessType"]:checked').value;
+            
+            let scoreVal = 2;
+            if (typeVal === "廣論班上課") scoreVal = 2;
+            else if (typeVal === "每日善行") scoreVal = 3;
+            else if (typeVal === "誦經") scoreVal = 3;
+            else if (typeVal === "聽音檔") scoreVal = 3;
+            else if (typeVal === "觀功") scoreVal = 5;
+            else if (typeVal === "念恩") scoreVal = 5;
+            else if (typeVal === "當義工") scoreVal = 8;
+            else if (typeVal === "參加法會") scoreVal = 8;
+
+            const typeText = `${typeVal} +${scoreVal}分`;
+            const now = new Date();
+            const timeString = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const logItem = { time: timeString, type: typeText, desc: desc };
+
+            showGlobalStatus(true, "正在上傳功德至雲端...");
+
+            const callbackName = "jsonpKindness_" + Date.now();
+            window[callbackName] = function(data) {
+                if(data.result === "success") {
+                    alert("✨ 善行已成功記錄！功德無量！");
+                    currentUser.score += scoreVal;
+                    if(!currentUser.logs) currentUser.logs = [];
+                    currentUser.logs.push(logItem);
+                    document.getElementById("kindnessDesc").value = "";
+                    showGlobalStatus(false);
+                    
+                    renderUserUI();
+                    renderLeaderboardAndWorld();
+                } else {
+                    alert("紀錄失敗！");
+                    showGlobalStatus(false);
+                }
+                
+                isSubmitting = false;
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "送出善行，灌溉大地 ✨";
+
+                document.getElementById(callbackName).remove();
+                delete window[callbackName];
+            };
+
+            const payload = { username: currentUser.username, scoreVal: scoreVal, logItem: logItem };
+            const script = document.createElement("script");
+            script.id = callbackName;
+            script.src = `${SCRIPT_URL}?action=addKindness&callback=${callbackName}&data=${encodeURIComponent(JSON.stringify(payload))}`;
+            document.body.appendChild(script);
+        }
+
+        function updateScoreHint(val) { document.getElementById("btnScoreHint").innerText = `+${val}`; }
+
+        function showGlobalStatus(show, msg = "", iconHtml = null) {
+            const statusBox = document.getElementById("globalStatus");
+            const statusMsg = document.getElementById("statusMessage");
+            const statusIcon = document.getElementById("statusIcon");
+            if(show) {
+                statusBox.classList.remove("hidden"); statusMsg.innerText = msg;
+                if(iconHtml) statusIcon.innerHTML = `<span class="text-3xl">${iconHtml}</span>`;
+                else statusIcon.innerHTML = `<div class="loading-spinner"></div>`;
+            } else { statusBox.classList.add("hidden"); }
+        }
+
+        function logout() { localStorage.removeItem("kindness_user"); location.reload(); }
+    </script>
+</body>
+</html>
